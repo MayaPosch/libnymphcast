@@ -1167,3 +1167,72 @@ NymphPlaybackStatus NymphCastClient::playbackStatus(uint32_t handle) {
 	
 	return status;
 }
+
+
+// --- CYCLE SUBTITLES ---
+// Cycle to next subtitle track or enable subtitles.
+uint8_t NymphCastClient::cycleSubtitles(uint32_t handle) {
+	// uint8 cycle_subtitle()
+	std::vector<NymphType*> values;
+	std::string result;
+	NymphType* returnValue = 0;
+	if (!NymphRemoteServer::callMethod(handle, "cycle_subtitle", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
+	
+	if (returnValue->type() != NYMPH_UINT8) {
+		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
+	
+	return ((NymphUint8*) returnValue)->getValue();
+}
+
+
+// --- CYCLE AUDIO ---
+// Cycle to next audio stream.
+uint8_t NymphCastClient::cycleAudio(uint32_t handle) {
+	// uint8 cycle_audio()
+	std::vector<NymphType*> values;
+	std::string result;
+	NymphType* returnValue = 0;
+	if (!NymphRemoteServer::callMethod(handle, "cycle_audio", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
+	
+	if (returnValue->type() != NYMPH_UINT8) {
+		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
+	
+	return ((NymphUint8*) returnValue)->getValue();
+}
+
+
+// --- CYCLE VIDEO ---
+// Cycle to next video stream.
+uint8_t NymphCastClient::cycleVideo(uint32_t handle) {
+	// uint8 cycle_video()
+	std::vector<NymphType*> values;
+	std::string result;
+	NymphType* returnValue = 0;
+	if (!NymphRemoteServer::callMethod(handle, "cycle_video", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
+	
+	if (returnValue->type() != NYMPH_UINT8) {
+		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
+	
+	return ((NymphUint8*) returnValue)->getValue();
+}

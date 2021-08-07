@@ -109,6 +109,10 @@ public:
 	uint8_t playbackSeek(uint32_t handle, uint64_t location);
 	uint8_t playbackSeek(uint32_t handle, uint8_t percentage);
 	NymphPlaybackStatus playbackStatus(uint32_t handle);
+	
+	uint8_t cycleSubtitles(uint32_t handle);
+	uint8_t cycleAudio(uint32_t handle);
+	uint8_t cycleVideo(uint32_t handle);
 };
 
 
