@@ -8,6 +8,12 @@ Libnymphcast is a library containing the core functionality for a [NymphCast](ht
 - Multi-casting media content.
 - Interact with [NymphCast MediaServers](https://github.com/MayaPosch/NymphCast-MediaServer).
 
+## Binary releases ##
+
+Binary releases of libnymphrpc are available for the following platforms:
+
+**Alpine-based:** https://pkgs.alpinelinux.org/contents?branch=edge&name=nymphcast&arch=x86&repo=community
+
 ## Compile from source ##
 
 To compile libnymphcast from source, the following dependencies must be installed:
