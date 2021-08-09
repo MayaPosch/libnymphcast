@@ -26,6 +26,10 @@ TOOLCHAIN_POSTFIX := .cmd
 endif
 endif
 
+ifndef ARCH
+ARCH := $(shell g++ -dumpmachine)/
+endif
+
 ifdef ANDROID
 #GCC := $(TOOLCHAIN_PREFIX)g++$(TOOLCHAIN_POSTFIX)
 GCC := armv7a-linux-androideabi21-clang++$(TOOLCHAIN_POSTFIX)
@@ -141,8 +145,8 @@ PREFIX ?= /usr
 .PHONY: install
 install:
 	install -d $(DESTDIR)$(PREFIX)/lib
-	install -m 644 lib/$(OUTPUT).a $(DESTDIR)$(PREFIX)/lib/
-	install -m 644 lib/$(OUTPUT).so.$(VERSION) $(DESTDIR)$(PREFIX)/lib/
+	install -m 644 lib/$(ARCH)$(OUTPUT).a $(DESTDIR)$(PREFIX)/lib/
+	install -m 644 lib/$(ARCH)$(OUTPUT).so.$(VERSION) $(DESTDIR)$(PREFIX)/lib/
 	install -d $(DESTDIR)$(PREFIX)/include
 	install -m 644 nymphcast_client.h $(DESTDIR)$(PREFIX)/include/
 	cd $(DESTDIR)$(PREFIX)/lib && \
