@@ -12,7 +12,7 @@ Libnymphcast is a library containing the core functionality for a [NymphCast](ht
 
 Binary releases of libnymphrpc are available for the following platforms:
 
-**Alpine-based:** https://pkgs.alpinelinux.org/contents?branch=edge&name=nymphcast&arch=x86&repo=community
+**Alpine-based:** [libnymphcast](https://pkgs.alpinelinux.org/packages?name=libnymphcast&branch=edge)
 
 ## Compile from source ##
 
