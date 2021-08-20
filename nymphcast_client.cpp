@@ -46,8 +46,8 @@ void NymphCastClient::MediaReadCallback(uint32_t session, NymphMessage* msg, voi
 	// Read N bytes from the file.
 	// TODO: receive desired block size here from remote?
 	
-	// FIXME: we're using 2M blocks for now. This should be made adjustable by the remote.
-	uint32_t bufLen = 2048 * 1024;
+	// FIXME: we're using 200 kB blocks for now. This should be made adjustable by the remote.
+	uint32_t bufLen = 200 * 1024;
 	char* buffer = new char[bufLen];
 	source.read(buffer, bufLen);
 	
@@ -106,8 +106,8 @@ void NymphCastClient::MediaSeekCallback(uint32_t session, NymphMessage* msg, voi
 	// Read N bytes from the file.
 	// TODO: receive desired block size here from remote?
 	
-	// FIXME: we're using 2M blocks for now. This should be made adjustable by the remote.
-	uint32_t bufLen = 2048 * 1024;
+	// FIXME: we're using 200 kB blocks for now. This should be made adjustable by the remote.
+	uint32_t bufLen = 200 * 1024;
 	char* buffer = new char[bufLen];
 	source.read(buffer, bufLen);
 	
