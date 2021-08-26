@@ -68,6 +68,8 @@ SHARED_FLAGS := -fPIC -shared -Wl,-soname,$(OUTPUT).so.$(VERSION)
 
 ifdef ANDROID
 CFLAGS += -fPIC
+else ifdef ANDROIDX86
+CFLAGS += -fPIC
 endif
 
 ifdef ANDROID64
