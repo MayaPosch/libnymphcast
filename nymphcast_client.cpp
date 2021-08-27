@@ -142,8 +142,8 @@ void NymphCastClient::MediaSeekCallback(uint32_t session, NymphMessage* msg, voi
 // Gets called every time the active remote media changes status.
 void NymphCastClient::MediaStatusCallback(uint32_t session, NymphMessage* msg, void* data) {
 	// Send received data to registered callback.
-	NymphPlaybackStatus status;
-	status.error = true;
+	NymphPlaybackStatus stat;
+	stat.error = true;
 	
 	NymphStruct* nstruct = ((NymphStruct*) msg->parameters()[0]);
 	NymphType* splay;
@@ -152,13 +152,19 @@ void NymphCastClient::MediaStatusCallback(uint32_t session, NymphMessage* msg, v
 		return;
 	}
 	
-	status.error = false;
-	status.playing = ((NymphBoolean*) splay)->getValue();
+	stat.error = false;
+	stat.playing = ((NymphBoolean*) splay)->getValue();
+	NymphType* status;
 	NymphType* duration;
 	NymphType* position;
 	NymphType* volume;
 	NymphType* artist;
 	NymphType* title;
+	if (!nstruct->getValue("status", status)) {
+		std::cerr << "MediaStatusCallback: Failed to find value 'status' in struct." << std::endl;
+		return;
+	}
+	
 	if (!nstruct->getValue("duration", duration)) {
 		std::cerr << "MediaStatusCallback: Failed to find value 'duration' in struct." << std::endl;
 		return;
@@ -184,14 +190,15 @@ void NymphCastClient::MediaStatusCallback(uint32_t session, NymphMessage* msg, v
 		return;
 	}
 	
-	status.duration = ((NymphUint64*) duration)->getValue();
-	status.position = ((NymphDouble*) position)->getValue();
-	status.volume = ((NymphUint8*) volume)->getValue();
-	status.artist = ((NymphString*) artist)->getValue();
-	status.title = ((NymphString*) title)->getValue();
+	stat.status = (NymphRemoteStatus) ((NymphUint32*) status)->getValue();
+	stat.duration = ((NymphUint64*) duration)->getValue();
+	stat.position = ((NymphDouble*) position)->getValue();
+	stat.volume = ((NymphUint8*) volume)->getValue();
+	stat.artist = ((NymphString*) artist)->getValue();
+	stat.title = ((NymphString*) title)->getValue();
 	
 	if (statusUpdateFunction) {
-		statusUpdateFunction(session, status);
+		statusUpdateFunction(session, stat);
 	}
 }
 
