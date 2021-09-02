@@ -49,11 +49,19 @@ struct NymphPlaybackStatus {
 };
 
 
+enum NymphMediaFileType {
+	FILE_TYPE_AUDIO = 0,
+	FILE_TYPE_VIDEO = 1,
+	FILE_TYPE_IMAGE = 2
+};
+
+
 struct NymphMediaFile {
 	NymphCastRemote mediaserver;
 	uint32_t id;
 	std::string name;
 	std::string section;
+	NymphMediaFileType type;
 };
 
 
