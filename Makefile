@@ -152,11 +152,15 @@ endif
 install:
 	install -d $(DESTDIR)$(PREFIX)/lib
 	install -m 644 lib/$(ARCH)$(OUTPUT).a $(DESTDIR)$(PREFIX)/lib/
-	install -m 644 lib/$(ARCH)$(OUTPUT).so.$(VERSION) $(DESTDIR)$(PREFIX)/lib/
+ifndef OS
+	install -m 644 lib/$(ARCH)$(OUTPUT).so.$(VERSION) $(DESTDIR)$(PREFIX)/lib
+endif
 	install -d $(DESTDIR)$(PREFIX)/include
 	install -m 644 nymphcast_client.h $(DESTDIR)$(PREFIX)/include/
+ifndef OS
 	cd $(DESTDIR)$(PREFIX)/lib && \
 		if [ -f $(OUTPUT).so ]; then \
 			rm $(OUTPUT).so; \
 		fi && \
 		ln -s $(OUTPUT).so.$(VERSION) $(OUTPUT).so
+endif
