@@ -30,6 +30,9 @@ ifndef ARCH
 ARCH := $(shell g++ -dumpmachine)/
 endif
 
+USYS := $(shell uname -s)
+UMCH := $(shell uname -m)
+
 ifdef ANDROID
 #GCC := $(TOOLCHAIN_PREFIX)g++$(TOOLCHAIN_POSTFIX)
 GCC := armv7a-linux-androideabi21-clang++$(TOOLCHAIN_POSTFIX)
@@ -164,3 +167,6 @@ ifndef OS
 		fi && \
 		ln -s $(OUTPUT).so.$(VERSION) $(OUTPUT).so
 endif
+
+package:
+	tar -cvzf lib/$(OUTPUT)-$(VERSION)-$(USYS)-$(UMCH).tar.gz lib/$(ARCH)$(OUTPUT).*
