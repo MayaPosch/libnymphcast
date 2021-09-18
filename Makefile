@@ -63,11 +63,20 @@ endif
 
 OUTPUT := libnymphcast
 VERSION := 0.1
+
+# Use -soname on Linux/BSD, -install_name on Darwin (MacOS).
+SONAME = -soname
+LIBNAME = $(OUTPUT).so.$(VERSION)
+ifeq ($(shell uname -s),Darwin)
+	SONAME = -install_name
+	LIBNAME = $(OUTPUT).0.dylib
+endif
+
 INCLUDE := -I src
 LIBS := -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON 
 #-lstdc++fs
 CFLAGS := $(INCLUDE) -g3 -std=c++17 -O0
-SHARED_FLAGS := -fPIC -shared -Wl,-soname,$(OUTPUT).so.$(VERSION)
+SHARED_FLAGS := -fPIC -shared -Wl,$(SONAME),$(LIBNAME)
 
 ifdef ANDROID
 CFLAGS += -fPIC
@@ -98,7 +107,7 @@ SHARED_OBJECTS := $(addprefix obj/shared/$(ARCH),$(notdir) $(SOURCES:.cpp=.o))
 
 all: lib
 
-lib: makedir lib/$(ARCH)$(OUTPUT).a lib/$(ARCH)$(OUTPUT).so.$(VERSION)
+lib: makedir lib/$(ARCH)$(OUTPUT).a lib/$(ARCH)$(LIBNAME)
 	
 obj/static/$(ARCH)%.o: %.cpp
 	$(GCC) -c -o $@ $< $(CFLAGS)
@@ -110,7 +119,7 @@ lib/$(ARCH)$(OUTPUT).a: $(OBJECTS)
 	-rm -f $@
 	$(AR) rcs $@ $^
 	
-lib/$(ARCH)$(OUTPUT).so.$(VERSION): $(SHARED_OBJECTS)
+lib/$(ARCH)$(LIBNAME): $(SHARED_OBJECTS)
 	$(GCC) -o $@ $(CFLAGS) $(SHARED_FLAGS) $(SHARED_OBJECTS) $(LIBS)
 	
 makedir:
