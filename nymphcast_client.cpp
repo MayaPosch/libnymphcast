@@ -52,16 +52,18 @@ void NymphCastClient::MediaReadCallback(uint32_t session, NymphMessage* msg, voi
 	source.read(buffer, bufLen);
 	
 	// Check characters read.
-	NymphBoolean* fileEof = new NymphBoolean(false);
-	if (source.gcount() < bufLen) { fileEof->setValue(true); }
+	NymphType* fileEof = new NymphType(false);
+	uint32_t count = source.gcount();
+	if (count < bufLen) { fileEof->setValue(true); }
 	
-	std::string block(buffer, source.gcount());
+	// Clean up the message we got.
+	msg->discard();
 	
 	// Debug
-	std::cout << "Read block with size " << block.length() << " bytes." << std::endl;
+	std::cout << "Read block with size " << count << " bytes." << std::endl;
 	
 	std::vector<NymphType*> values;
-	values.push_back(new NymphBlob(block));
+	values.push_back(new NymphType(buffer, count, true));
 	values.push_back(fileEof);
 	NymphType* returnValue = 0;
 	std::string result;
@@ -71,10 +73,7 @@ void NymphCastClient::MediaReadCallback(uint32_t session, NymphMessage* msg, voi
 		return;
 	}
 	
-	if (returnValue->type() != NYMPH_UINT8) {
-		std::cout << "Return value wasn't an int. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(session, result);
-	}
+	delete returnValue;
 }
 
 
@@ -89,7 +88,7 @@ void NymphCastClient::MediaSeekCallback(uint32_t session, NymphMessage* msg, voi
 	std::cout << "Media Seek callback called." << std::endl;
 	
 	// Seek to the indicated position in the file.
-	uint64_t position = ((NymphUint64*) msg->parameters()[0])->getValue();
+	uint64_t position = msg->parameters()[0]->getUint64();
 	std::cout << "Seeking to position: " << position << std::endl;
 	if (source.eof()) {
 		std::cout << "Clearing EOF flag..." << std::endl;
@@ -100,6 +99,8 @@ void NymphCastClient::MediaSeekCallback(uint32_t session, NymphMessage* msg, voi
 	std::cout << "Seeking from file beginning..." << std::endl;
 	source.seekg(0);
 	source.seekg(position);
+	
+	msg->discard();
 	
 	// Read in first segment.
 	// Call the 'session_data' remote function with new data buffer.
@@ -112,16 +113,15 @@ void NymphCastClient::MediaSeekCallback(uint32_t session, NymphMessage* msg, voi
 	source.read(buffer, bufLen);
 	
 	// Check characters read, set EOF if at the end.
-	NymphBoolean* fileEof = new NymphBoolean(false);
-	if (source.gcount() < bufLen) { fileEof->setValue(true); }
-	
-	std::string block(buffer, source.gcount());
+	NymphType* fileEof = new NymphType(false);
+	uint32_t count = source.gcount();
+	if (count < bufLen) { fileEof->setValue(true); }
 	
 	// Debug
-	std::cout << "Read block with size " << block.length() << " bytes." << std::endl;
+	std::cout << "Read block with size " << count << " bytes." << std::endl;
 	
 	std::vector<NymphType*> values;
-	values.push_back(new NymphBlob(block));
+	values.push_back(new NymphType(buffer, count, true));
 	values.push_back(fileEof);
 	NymphType* returnValue = 0;
 	std::string result;
@@ -131,10 +131,7 @@ void NymphCastClient::MediaSeekCallback(uint32_t session, NymphMessage* msg, voi
 		return;
 	}
 	
-	if (returnValue->type() != NYMPH_UINT8) {
-		std::cout << "Return value wasn't an int. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(session, result);
-	}
+	delete returnValue;
 }
 
 
@@ -145,71 +142,82 @@ void NymphCastClient::MediaStatusCallback(uint32_t session, NymphMessage* msg, v
 	NymphPlaybackStatus stat;
 	stat.error = true;
 	
-	NymphStruct* nstruct = ((NymphStruct*) msg->parameters()[0]);
+	NymphType* nstruct = msg->parameters()[0];
 	NymphType* splay;
-	if (!nstruct->getValue("playing", splay)) {
+	if (!nstruct->getStructValue("playing", splay)) {
 		std::cerr << "MediaStatusCallback: Failed to find value 'playing' in struct." << std::endl;
+		msg->discard();
 		return;
 	}
 	
 	stat.error = false;
-	stat.playing = ((NymphBoolean*) splay)->getValue();
+	stat.playing = splay->getBool();
 	NymphType* status;
 	NymphType* duration;
 	NymphType* position;
 	NymphType* volume;
 	NymphType* artist;
 	NymphType* title;
-	if (!nstruct->getValue("status", status)) {
+	if (!nstruct->getStructValue("status", status)) {
 		std::cerr << "MediaStatusCallback: Failed to find value 'status' in struct." << std::endl;
+		msg->discard();
 		return;
 	}
 	
-	if (!nstruct->getValue("duration", duration)) {
+	if (!nstruct->getStructValue("duration", duration)) {
 		std::cerr << "MediaStatusCallback: Failed to find value 'duration' in struct." << std::endl;
+		msg->discard();
 		return;
 	}
 	
-	if (!nstruct->getValue("position", position)) {
+	if (!nstruct->getStructValue("position", position)) {
 		std::cerr << "MediaStatusCallback: Failed to find value 'position' in struct." << std::endl;
+		msg->discard();
 		return;
 	}
 	
-	if (!nstruct->getValue("volume", volume)) {
+	if (!nstruct->getStructValue("volume", volume)) {
 		std::cerr << "MediaStatusCallback: Failed to find value 'volume' in struct." << std::endl;
+		msg->discard();
 		return;
 	}
 	
-	if (!nstruct->getValue("artist", artist)) {
+	if (!nstruct->getStructValue("artist", artist)) {
 		std::cerr << "MediaStatusCallback: Failed to find value 'artist' in struct." << std::endl;
+		msg->discard();
 		return;
 	}
 	
-	if (!nstruct->getValue("title", title)) {
+	if (!nstruct->getStructValue("title", title)) {
 		std::cerr << "MediaStatusCallback: Failed to find value 'title' in struct." << std::endl;
+		msg->discard();
 		return;
 	}
 	
-	stat.status = (NymphRemoteStatus) ((NymphUint32*) status)->getValue();
-	stat.duration = ((NymphUint64*) duration)->getValue();
-	stat.position = ((NymphDouble*) position)->getValue();
-	stat.volume = ((NymphUint8*) volume)->getValue();
-	stat.artist = ((NymphString*) artist)->getValue();
-	stat.title = ((NymphString*) title)->getValue();
+	stat.status = (NymphRemoteStatus) status->getUint32();
+	stat.duration = duration->getUint64();
+	stat.position = position->getDouble();
+	stat.volume = volume->getUint8();
+	stat.artist = artist->getString();
+	stat.title = title->getString();
 	
 	if (statusUpdateFunction) {
 		statusUpdateFunction(session, stat);
 	}
+	
+	msg->discard();
 }
 
 
 void NymphCastClient::ReceiveFromAppCallback(uint32_t session, NymphMessage* msg, void* data) {
-	std::string appId = ((NymphString*) msg->parameters()[0])->getValue();
-	std::string message = ((NymphString*) msg->parameters()[1])->getValue();
+	std::string appId = msg->parameters()[0]->getString();
+	std::string message = msg->parameters()[1]->getString();
 	
 	if (appMessageFunction) {
 		appMessageFunction(appId, message);
 	}
+	
+	msg->discard();
 }
 
 
@@ -285,12 +293,11 @@ std::string NymphCastClient::getApplicationList(uint32_t handle) {
 		return std::string();
 	}
 	
-	if (returnValue->type() != NYMPH_STRING) {
-		std::cout << "Return value wasn't a string. Type: " << returnValue->type() << std::endl;
-		return std::string();
-	}
+	std::string retStr = returnValue->getString();
 	
-	return ((NymphString*) returnValue)->getValue();
+	delete returnValue;
+	
+	return retStr;
 }
 
 
@@ -304,12 +311,12 @@ std::string NymphCastClient::getApplicationList(uint32_t handle) {
 	
 	@return String with any response from the remote.
 */
-std::string NymphCastClient::sendApplicationMessage(uint32_t handle, std::string appId, 
-																		std::string message) {
+std::string NymphCastClient::sendApplicationMessage(uint32_t handle, std::string &appId, 
+																		std::string &message) {
 	// string app_send(uint32 appId, string data)
 	std::vector<NymphType*> values;
-	values.push_back(new NymphString(appId));
-	values.push_back(new NymphString(message));
+	values.push_back(new NymphType(&appId));
+	values.push_back(new NymphType(&message));
 	NymphType* returnValue = 0;
 	std::string result;
 	if (!NymphRemoteServer::callMethod(handle, "app_send", values, returnValue, result)) {
@@ -317,12 +324,11 @@ std::string NymphCastClient::sendApplicationMessage(uint32_t handle, std::string
 		return std::string();
 	}
 	
-	if (returnValue->type() != NYMPH_STRING) {
-		std::cout << "Return value wasn't a string. Type: " << returnValue->type() << std::endl;
-		return std::string();
-	}
+	std::string retStr = returnValue->getString();
 	
-	return ((NymphString*) returnValue)->getValue();
+	delete returnValue;
+	
+	return retStr;
 }
 
 
@@ -337,11 +343,11 @@ std::string NymphCastClient::sendApplicationMessage(uint32_t handle, std::string
 	
 	@return A string containing the (binary) data, if successful.
 */
-std::string NymphCastClient::loadResource(uint32_t handle, std::string appId, std::string name) {
+std::string NymphCastClient::loadResource(uint32_t handle, std::string &appId, std::string &name) {
 	// string app_loadResource(string appId, string name)
 	std::vector<NymphType*> values;
-	values.push_back(new NymphString(appId));
-	values.push_back(new NymphString(name));
+	values.push_back(new NymphType(&appId));
+	values.push_back(new NymphType(&name));
 	NymphType* returnValue = 0;
 	std::string result;
 	if (!NymphRemoteServer::callMethod(handle, "app_loadResource", values, returnValue, result)) {
@@ -349,12 +355,11 @@ std::string NymphCastClient::loadResource(uint32_t handle, std::string appId, st
 		return std::string();
 	}
 	
-	if (returnValue->type() != NYMPH_BLOB) {
-		std::cout << "Return value wasn't a string. Type: " << returnValue->type() << std::endl;
-		return std::string();
-	}
+	std::string retStr = returnValue->getString();
 	
-	return ((NymphBlob*) returnValue)->getValue();
+	delete returnValue;
+	
+	return retStr;
 }
 
 
@@ -509,7 +514,7 @@ bool NymphCastClient::connectServer(std::string ip, uint32_t port, uint32_t &han
 	
 	// Send message and wait for response.
 	std::vector<NymphType*> values;
-	values.push_back(new NymphString(clientId));
+	values.push_back(new NymphType(&clientId));
 	NymphType* returnValue = 0;
 	if (!NymphRemoteServer::callMethod(handle, "connect", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
@@ -517,14 +522,7 @@ bool NymphCastClient::connectServer(std::string ip, uint32_t port, uint32_t &han
 		return false;
 	}
 	
-	if (returnValue->type() != NYMPH_BOOL) {
-		std::cout << "Return value wasn't a boolean. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(handle, result);
-		return false;
-	}
-	
 	delete returnValue;
-	returnValue = 0;
 	
 	
 	// The remote NymphCast server works in a pull fashion, which means that we have to register
@@ -561,6 +559,8 @@ bool NymphCastClient::disconnectServer(uint32_t handle) {
 		return false;
 	}
 	
+	delete returnValue;
+	
 	// Shutdown.
 	NymphRemoteServer::disconnect(handle, result);
 	
@@ -595,32 +595,28 @@ std::vector<NymphMediaFile> NymphCastClient::getShares(NymphCastRemote mediaserv
 		return files;
 	}
 	
-	if (returnValue->type() != NYMPH_ARRAY) {
-		std::cout << "Return value wasn't an array. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(mshandle, result);
-		return files;
-	}
-	
 	// Disconnect from remote mediaserver.
 	NymphRemoteServer::disconnect(mshandle, result);
 	
 	// Parse array and return it.
-	std::vector<NymphType*> ncf = ((NymphArray*) returnValue)->getValues();
-	for (int j = 0; j < ncf.size(); ++j) {
+	std::vector<NymphType*>* ncf = returnValue->getArray();
+	for (int j = 0; j < ncf->size(); ++j) {
 		NymphMediaFile file;
 		file.mediaserver = mediaserver;
 		NymphType* value = 0;
-		if (!((NymphStruct*) ncf[j])->getValue("id", value)) { return files; }
-		file.id = ((NymphUint32*) value)->getValue();
-		if (!((NymphStruct*) ncf[j])->getValue("filename", value)) { return files; }
-		file.name = ((NymphString*) value)->getValue();
-		if (!((NymphStruct*) ncf[j])->getValue("section", value)) { return files; }
-		file.section = ((NymphString*) value)->getValue();
-		if (!((NymphStruct*) ncf[j])->getValue("type", value)) { return files; }
-		file.type = (NymphMediaFileType) ((NymphUint8*) value)->getValue();
+		if (!(*ncf)[j]->getStructValue("id", value)) { return files; }
+		file.id = value->getUint32();
+		if (!(*ncf)[j]->getStructValue("filename", value)) { return files; }
+		file.name = value->getString();
+		if (!(*ncf)[j]->getStructValue("section", value)) { return files; }
+		file.section = value->getString();
+		if (!(*ncf)[j]->getStructValue("type", value)) { return files; }
+		file.type = (NymphMediaFileType) value->getUint8();
 		
 		files.push_back(file);
 	}
+	
+	delete returnValue;
 		
 	return files;
 }
@@ -649,31 +645,44 @@ bool NymphCastClient::playShare(NymphMediaFile file, std::vector<NymphCastRemote
 	}
 	
 	// Encode receivers.
-	NymphArray* recArr = new NymphArray();
+	//NymphType* recArr = new NymphArray();
+	std::vector<NymphType*>* recArr = new std::vector<NymphType*>();
 	for (int i = 0; i < receivers.size(); ++i) {
-		NymphStruct* remote = new NymphStruct;
-		remote->addPair("name", new NymphString(receivers[i].name));
-		remote->addPair("ipv4", new NymphString(receivers[i].ipv4));
-		remote->addPair("ipv6", new NymphString(receivers[i].ipv6));
-		recArr->addValue(remote);
+		//NymphStruct* remote = new NymphStruct;
+		std::map<std::string, NymphPair>* pairs = new std::map<std::string, NymphPair>();
+		NymphPair pair;
+		std::string* key;
+		//remote->addPair("name", new NymphString(receivers[i].name));
+		key = new std::string("name");
+		pair.key = new NymphType(key, true);
+		pair.value = new NymphType(&receivers[i].name);
+		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
+		
+		//remote->addPair("ipv4", new NymphString(receivers[i].ipv4));
+		key = new std::string("ipv4");
+		pair.key = new NymphType(key, true);
+		pair.value = new NymphType(&receivers[i].ipv4);
+		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
+		
+		//remote->addPair("ipv6", new NymphString(receivers[i].ipv6));
+		key = new std::string("ipv6");
+		pair.key = new NymphType(key, true);
+		pair.value = new NymphType(&receivers[i].ipv6);
+		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
+		
+		recArr->push_back(new NymphType(pairs, true));
 	}
 	
 	// Encode file data.
-	NymphUint32* fileId = new NymphUint32(file.id);
+	NymphType* fileId = new NymphType(file.id);
 	
 	// Call RPC function to get the list of shared files on the server.
 	std::vector<NymphType*> values;
 	values.push_back(fileId);
-	values.push_back(recArr);
+	values.push_back(new NymphType(recArr, true));
 	NymphType* returnValue = 0;
 	if (!NymphRemoteServer::callMethod(mshandle, "playMedia", values, returnValue, result)) {
 		std::cout << "Error calling remote method playMedia: " << result << std::endl;
-		return false;
-	}
-	
-	if (returnValue->type() != NYMPH_UINT8) {
-		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(mshandle, result);
 		return false;
 	}
 	
@@ -681,7 +690,8 @@ bool NymphCastClient::playShare(NymphMediaFile file, std::vector<NymphCastRemote
 	NymphRemoteServer::disconnect(mshandle, result);
 	
 	// Check result.
-	uint8_t res = ((NymphUint8*) returnValue)->getValue();
+	uint8_t res = returnValue->getUint8();	
+	delete returnValue;	
 	if (res != 0) { return false; }
 	
 	return true;
@@ -700,29 +710,46 @@ bool NymphCastClient::playShare(NymphMediaFile file, std::vector<NymphCastRemote
 	@return True if the operation succeeded.
 */
 bool NymphCastClient::addSlaves(uint32_t handle, std::vector<NymphCastRemote> remotes) {
-	NymphArray* sArr = new NymphArray;
+	//NymphArray* sArr = new NymphArray;
+	std::vector<NymphType*>* sArr = new std::vector<NymphType*>();
 	for (int i = 0; i < remotes.size(); ++i) {
-		NymphStruct* remote = new NymphStruct;
-		remote->addPair("name", new NymphString(remotes[i].name));
-		remote->addPair("ipv4", new NymphString(remotes[i].ipv4));
-		remote->addPair("ipv6", new NymphString(remotes[i].ipv6));
-		sArr->addValue(remote);
+		//NymphStruct* remote = new NymphStruct;
+		std::map<std::string, NymphPair>* remote = new std::map<std::string, NymphPair>;
+		//remote->addPair("name", new NymphString(remotes[i].name));
+		NymphPair pair;
+		std::string* key = new std::string("name");
+		pair.key = new NymphType(key, true);
+		pair.value = new NymphType(&remotes[i].name);
+		remote->insert(std::pair<std::string, NymphPair>(*key, pair));
+	
+		//remote->addPair("ipv4", new NymphString(remotes[i].ipv4));
+		key = new std::string("ipv4");
+		pair.key = new NymphType(key, true);
+		pair.value = new NymphType(&remotes[i].ipv4);
+		remote->insert(std::pair<std::string, NymphPair>(*key, pair));
+		
+		//remote->addPair("ipv6", new NymphString(remotes[i].ipv6));
+		key = new std::string("ipv6");
+		pair.key = new NymphType(key, true);
+		pair.value = new NymphType(&remotes[i].ipv6);
+		remote->insert(std::pair<std::string, NymphPair>(*key, pair));
+		
+		sArr->push_back(new NymphType(remote, true));
 	}
 	
 	std::vector<NymphType*> values;
 	std::string result;
 	NymphType* returnValue = 0;
-	values.push_back(sArr);
+	values.push_back(new NymphType(sArr, true));
 	if (!NymphRemoteServer::callMethod(handle, "session_add_slave", values, returnValue, result)) {
 		std::cout << "Error calling remote method session_add_slave: " << result << std::endl;
 		return false;
 	}
 	
-	if (returnValue->type() != NYMPH_UINT8) {
-		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(handle, result);
-		return false;
-	}
+	// Check result.
+	uint8_t res = returnValue->getUint8();	
+	delete returnValue;	
+	if (res != 0) { return false; }
 	
 	return true;
 }
@@ -769,22 +796,27 @@ bool NymphCastClient::castFile(uint32_t handle, std::string filename) {
 	std::vector<NymphType*> values;
 	std::string result;
 	NymphType* returnValue = 0;
-	NymphStruct* ms = new NymphStruct;
+	
+	std::map<std::string, NymphPair>* pairs = new std::map<std::string, NymphPair>();
 	//ms->addPair("filesize", new NymphUint32(fs::file_size(filePath)));
-	ms->addPair("filesize", new NymphUint32((uint32_t) file.getSize()));
+	std::string* key = new std::string("filesize");
+	NymphPair pair;
+	pair.key = new NymphType(key, true);
+	pair.value = new NymphType((uint32_t) file.getSize());
+	pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
+	
 	values.clear();
-	values.push_back(ms);
+	values.push_back(new NymphType(pairs, true));
 	if (!NymphRemoteServer::callMethod(handle, "session_start", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
 		NymphRemoteServer::disconnect(handle, result);
 		return false;
 	}
 	
-	if (returnValue->type() != NYMPH_UINT8) {
-		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(handle, result);
-		return false;
-	}
+	// Check result.
+	uint8_t res = returnValue->getUint8();	
+	delete returnValue;	
+	if (res != 0) { return false; }
 	
 	return true;
 }
@@ -799,23 +831,22 @@ bool NymphCastClient::castFile(uint32_t handle, std::string filename) {
 	
 	@return True if the operation succeeded.
 */
-bool NymphCastClient::castUrl(uint32_t handle, std::string url) {
+bool NymphCastClient::castUrl(uint32_t handle, std::string &url) {
 	// uint8 playback_url(string)
 	std::vector<NymphType*> values;
 	std::string result;
 	NymphType* returnValue = 0;
-	values.push_back(new NymphString(url));
+	values.push_back(new NymphType(&url));
 	if (!NymphRemoteServer::callMethod(handle, "playback_url", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
 		NymphRemoteServer::disconnect(handle, result);
 		return false;
 	}
 	
-	if (returnValue->type() != NYMPH_UINT8) {
-		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(handle, result);
-		return false;
-	}
+	// Check result.
+	uint8_t res = returnValue->getUint8();	
+	delete returnValue;	
+	if (res != 0) { return false; }
 	
 	return true;
 }
@@ -835,20 +866,18 @@ uint8_t NymphCastClient::volumeSet(uint32_t handle, uint8_t volume) {
 	std::vector<NymphType*> values;
 	std::string result;
 	NymphType* returnValue = 0;
-	values.push_back(new NymphUint8(volume));
+	values.push_back(new NymphType(volume));
 	if (!NymphRemoteServer::callMethod(handle, "volume_set", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
 		NymphRemoteServer::disconnect(handle, result);
 		return 0;
 	}
 	
-	if (returnValue->type() != NYMPH_UINT8) {
-		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(handle, result);
-		return 0;
-	}
+	// Check result.
+	uint8_t res = returnValue->getUint8();	
+	delete returnValue;	
 	
-	return ((NymphUint8*) returnValue)->getValue();
+	return res;
 }
 
 
@@ -871,13 +900,11 @@ uint8_t NymphCastClient::volumeUp(uint32_t handle) {
 		return 0;
 	}
 	
-	if (returnValue->type() != NYMPH_UINT8) {
-		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(handle, result);
-		return 0;
-	}
+	// Check result.
+	uint8_t res = returnValue->getUint8();	
+	delete returnValue;	
 	
-	return ((NymphUint8*) returnValue)->getValue();
+	return res;
 }
 
 
@@ -900,13 +927,11 @@ uint8_t NymphCastClient::volumeDown(uint32_t handle) {
 		return 0;
 	}
 	
-	if (returnValue->type() != NYMPH_UINT8) {
-		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(handle, result);
-		return 0;
-	}
+	// Check result.
+	uint8_t res = returnValue->getUint8();	
+	delete returnValue;	
 	
-	return ((NymphUint8*) returnValue)->getValue();
+	return res;
 }
 
 
@@ -929,13 +954,11 @@ uint8_t NymphCastClient::playbackStart(uint32_t handle) {
 		return 0;
 	}
 	
-	if (returnValue->type() != NYMPH_UINT8) {
-		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(handle, result);
-		return 0;
-	}
+	// Check result.
+	uint8_t res = returnValue->getUint8();	
+	delete returnValue;	
 	
-	return ((NymphUint8*) returnValue)->getValue();
+	return res;
 }
 
 
@@ -958,13 +981,11 @@ uint8_t NymphCastClient::playbackStop(uint32_t handle) {
 		return 0;
 	}
 	
-	if (returnValue->type() != NYMPH_UINT8) {
-		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(handle, result);
-		return 0;
-	}
+	// Check result.
+	uint8_t res = returnValue->getUint8();	
+	delete returnValue;	
 	
-	return ((NymphUint8*) returnValue)->getValue();
+	return res;
 }
 
 
@@ -987,13 +1008,11 @@ uint8_t NymphCastClient::playbackPause(uint32_t handle) {
 		return 0;
 	}
 	
-	if (returnValue->type() != NYMPH_UINT8) {
-		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(handle, result);
-		return 0;
-	}
+	// Check result.
+	uint8_t res = returnValue->getUint8();	
+	delete returnValue;	
 	
-	return ((NymphUint8*) returnValue)->getValue();
+	return res;
 }
 
 
@@ -1016,13 +1035,11 @@ uint8_t NymphCastClient::playbackRewind(uint32_t handle) {
 		return 0;
 	}
 	
-	if (returnValue->type() != NYMPH_UINT8) {
-		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(handle, result);
-		return 0;
-	}
+	// Check result.
+	uint8_t res = returnValue->getUint8();	
+	delete returnValue;	
 	
-	return ((NymphUint8*) returnValue)->getValue();
+	return res;
 }
 
 
@@ -1045,13 +1062,11 @@ uint8_t NymphCastClient::playbackForward(uint32_t handle) {
 		return 0;
 	}
 	
-	if (returnValue->type() != NYMPH_UINT8) {
-		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(handle, result);
-		return 0;
-	}
+	// Check result.
+	uint8_t res = returnValue->getUint8();	
+	delete returnValue;	
 	
-	return ((NymphUint8*) returnValue)->getValue();
+	return res;
 }
 
 
@@ -1070,10 +1085,10 @@ uint8_t NymphCastClient::playbackSeek(uint32_t handle, uint64_t location) {
 	std::string result;
 	NymphType* returnValue = 0;
 	
-	NymphArray* valArray = new NymphArray();
-	valArray->addValue(new NymphUint8(NYMPH_SEEK_TYPE_BYTES));
-	valArray->addValue(new NymphUint64(location));	
-	values.push_back(valArray);
+	std::vector<NymphType*>* valArray = new std::vector<NymphType*>();
+	valArray->push_back(new NymphType(NYMPH_SEEK_TYPE_BYTES));
+	valArray->push_back(new NymphType(location));	
+	values.push_back(new NymphType(valArray, true));
 	
 	if (!NymphRemoteServer::callMethod(handle, "playback_seek", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
@@ -1081,13 +1096,11 @@ uint8_t NymphCastClient::playbackSeek(uint32_t handle, uint64_t location) {
 		return 0;
 	}
 	
-	if (returnValue->type() != NYMPH_UINT8) {
-		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(handle, result);
-		return 0;
-	}
+	// Check result.
+	uint8_t res = returnValue->getUint8();	
+	delete returnValue;	
 	
-	return ((NymphUint8*) returnValue)->getValue();
+	return res;
 }
 
 
@@ -1106,24 +1119,21 @@ uint8_t NymphCastClient::playbackSeek(uint32_t handle, uint8_t percentage) {
 	std::string result;
 	NymphType* returnValue = 0;
 	
-	NymphArray* valArray = new NymphArray();
-	valArray->addValue(new NymphUint8(NYMPH_SEEK_TYPE_PERCENTAGE));
-	valArray->addValue(new NymphUint8(percentage));	
-	values.push_back(valArray);
-	
+	std::vector<NymphType*>* valArray = new std::vector<NymphType*>();
+	valArray->push_back(new NymphType(NYMPH_SEEK_TYPE_PERCENTAGE));
+	valArray->push_back(new NymphType(percentage));	
+	values.push_back(new NymphType(valArray, true));
 	if (!NymphRemoteServer::callMethod(handle, "playback_seek", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
 		NymphRemoteServer::disconnect(handle, result);
 		return 0;
 	}
 	
-	if (returnValue->type() != NYMPH_UINT8) {
-		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(handle, result);
-		return 0;
-	}
+	// Check result.
+	uint8_t res = returnValue->getUint8();	
+	delete returnValue;	
 	
-	return ((NymphUint8*) returnValue)->getValue();
+	return res;
 }
 
 
@@ -1136,59 +1146,72 @@ uint8_t NymphCastClient::playbackSeek(uint32_t handle, uint8_t percentage) {
 	@return A NymphPlaybackStatus struct with playback information.
 */
 NymphPlaybackStatus NymphCastClient::playbackStatus(uint32_t handle) {
-	NymphPlaybackStatus status;
-	status.error = true;
+	NymphPlaybackStatus stat;
+	stat.error = true;
 	
 	std::vector<NymphType*> values;
 	std::string result;
-	NymphType* returnValue = 0;
-	if (!NymphRemoteServer::callMethod(handle, "playback_status", values, returnValue, result)) {
+	NymphType* nstruct = 0;
+	if (!NymphRemoteServer::callMethod(handle, "playback_status", values, nstruct, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
 		NymphRemoteServer::disconnect(handle, result);
-		return status;
+		return stat;
 	}
 	
-	if (returnValue->type() != NYMPH_STRUCT) {
-		std::cout << "Return value wasn't a struct. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(handle, result);
-		return status;
-	}
-	
-	NymphStruct* nstruct = ((NymphStruct*) returnValue);
 	NymphType* splay;
-	if (!nstruct->getValue("playing", splay)) {
-		return status;
+	if (!nstruct->getStructValue("playing", splay)) {
+		std::cerr << "Failed to find value 'playing' in struct." << std::endl;
+		return stat;
 	}
 	
-	status.playing = ((NymphBoolean*) splay)->getValue();
+	stat.error = false;
+	stat.playing = splay->getBool();
+	NymphType* status;
 	NymphType* duration;
 	NymphType* position;
 	NymphType* volume;
-	if (status.playing) {
-		if (!nstruct->getValue("duration", duration)) {
-			std::cerr << "playbackStatus: Failed to find value 'duration' in struct." << std::endl;
-			return status;
-		}
-		
-		if (!nstruct->getValue("position", position)) {
-			std::cerr << "playbackStatus: Failed to find value 'position' in struct." << std::endl;
-			return status;
-		}
-		
-		
-		if (!nstruct->getValue("volume", volume)) {
-			std::cerr << "playbackStatus: Failed to find value 'volume' in struct." << std::endl;
-			return status;
-		}
-		
-		status.duration = ((NymphUint64*) duration)->getValue();
-		status.position = ((NymphDouble*) position)->getValue();
-		status.volume = ((NymphDouble*) volume)->getValue();
+	NymphType* artist;
+	NymphType* title;
+	if (!nstruct->getStructValue("status", status)) {
+		std::cerr << "Failed to find value 'status' in struct." << std::endl;
+		return stat;
 	}
 	
-	status.error = false;
+	if (!nstruct->getStructValue("duration", duration)) {
+		std::cerr << "Failed to find value 'duration' in struct." << std::endl;
+		return stat;
+	}
 	
-	return status;
+	if (!nstruct->getStructValue("position", position)) {
+		std::cerr << "Failed to find value 'position' in struct." << std::endl;
+		return stat;
+	}
+	
+	if (!nstruct->getStructValue("volume", volume)) {
+		std::cerr << "Failed to find value 'volume' in struct." << std::endl;
+		return stat;
+	}
+	
+	if (!nstruct->getStructValue("artist", artist)) {
+		std::cerr << "Failed to find value 'artist' in struct." << std::endl;
+		return stat;
+	}
+	
+	if (!nstruct->getStructValue("title", title)) {
+		std::cerr << "Failed to find value 'title' in struct." << std::endl;
+		return stat;
+	}
+	
+	stat.status = (NymphRemoteStatus) status->getUint32();
+	stat.duration = duration->getUint64();
+	stat.position = position->getDouble();
+	stat.volume = volume->getUint8();
+	stat.artist = artist->getString();
+	stat.title = title->getString();
+	
+	delete nstruct;
+	
+	return stat;
 }
 
 
@@ -1205,13 +1228,11 @@ uint8_t NymphCastClient::cycleSubtitles(uint32_t handle) {
 		return 0;
 	}
 	
-	if (returnValue->type() != NYMPH_UINT8) {
-		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(handle, result);
-		return 0;
-	}
+	// Check result.
+	uint8_t res = returnValue->getUint8();	
+	delete returnValue;	
 	
-	return ((NymphUint8*) returnValue)->getValue();
+	return res;
 }
 
 
@@ -1228,13 +1249,11 @@ uint8_t NymphCastClient::cycleAudio(uint32_t handle) {
 		return 0;
 	}
 	
-	if (returnValue->type() != NYMPH_UINT8) {
-		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(handle, result);
-		return 0;
-	}
+	// Check result.
+	uint8_t res = returnValue->getUint8();	
+	delete returnValue;	
 	
-	return ((NymphUint8*) returnValue)->getValue();
+	return res;
 }
 
 
@@ -1251,11 +1270,9 @@ uint8_t NymphCastClient::cycleVideo(uint32_t handle) {
 		return 0;
 	}
 	
-	if (returnValue->type() != NYMPH_UINT8) {
-		std::cout << "Return value wasn't a uint8. Type: " << returnValue->type() << std::endl;
-		NymphRemoteServer::disconnect(handle, result);
-		return 0;
-	}
+	// Check result.
+	uint8_t res = returnValue->getUint8();	
+	delete returnValue;	
 	
-	return ((NymphUint8*) returnValue)->getValue();
+	return res;
 }

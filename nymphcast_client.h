@@ -90,8 +90,8 @@ public:
 	void setApplicationCallback(AppMessageFunction function);
 	void setStatusUpdateCallback(StatusUpdateFunction function);
 	std::string getApplicationList(uint32_t handle);
-	std::string sendApplicationMessage(uint32_t handle, std::string appId, std::string message);
-	std::string loadResource(uint32_t handle, std::string appId, std::string name);
+	std::string sendApplicationMessage(uint32_t handle, std::string &appId, std::string &message);
+	std::string loadResource(uint32_t handle, std::string &appId, std::string &name);
 
 	std::vector<NymphCastRemote> findServers();
 	std::vector<NymphCastRemote> findShares();
@@ -103,7 +103,7 @@ public:
 	
 	bool addSlaves(uint32_t handle, std::vector<NymphCastRemote> remotes);
 	bool castFile(uint32_t handle, std::string filename);
-	bool castUrl(uint32_t handle, std::string url);
+	bool castUrl(uint32_t handle, std::string &url);
 	
 	uint8_t volumeSet(uint32_t handle, uint8_t volume);
 	uint8_t volumeUp(uint32_t handle);
