@@ -228,7 +228,7 @@ void NymphCastClient::ReceiveFromAppCallback(uint32_t session, NymphMessage* msg
 NymphCastClient::NymphCastClient() {
 	// Initialise the remote client instance.
 	long timeout = 2000; // 2 seconds.
-	NymphRemoteServer::init(logFunction, NYMPH_LOG_LEVEL_TRACE, timeout);
+	NymphRemoteServer::init(logFunction, NYMPH_LOG_LEVEL_INFO, timeout);
 	
 	appMessageFunction = 0;
 	statusUpdateFunction = 0;
