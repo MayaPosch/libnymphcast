@@ -101,7 +101,7 @@ endif
 endif
 endif
 
-SOURCES := $(wildcard *.cpp)
+SOURCES := $(wildcard src/*.cpp)
 OBJECTS := $(addprefix obj/static/$(ARCH),$(notdir) $(SOURCES:.cpp=.o))
 SHARED_OBJECTS := $(addprefix obj/shared/$(ARCH),$(notdir) $(SOURCES:.cpp=.o))
 
@@ -124,12 +124,13 @@ lib/$(ARCH)$(LIBNAME): $(SHARED_OBJECTS)
 	
 makedir:
 	$(MAKEDIR) lib
-	$(MAKEDIR) obj/shared
-	$(MAKEDIR) obj/static
 ifdef ARCH
 	$(MAKEDIR) lib/$(ARCH)
-	$(MAKEDIR) obj/shared/$(ARCH)
-	$(MAKEDIR) obj/static/$(ARCH)
+	$(MAKEDIR) obj/shared/$(ARCH)src
+	$(MAKEDIR) obj/static/$(ARCH)src
+else
+	$(MAKEDIR) obj/shared/src
+	$(MAKEDIR) obj/static/src
 endif
 	
 test: test-client test-server
