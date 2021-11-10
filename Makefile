@@ -169,7 +169,7 @@ ifndef OS
 	install -m 644 lib/$(ARCH)$(OUTPUT).so.$(VERSION) $(DESTDIR)$(PREFIX)/lib
 endif
 	install -d $(DESTDIR)$(PREFIX)/include
-	install -m 644 nymphcast_client.h $(DESTDIR)$(PREFIX)/include/
+	install -m 644 src/nymphcast_client.h $(DESTDIR)$(PREFIX)/include/
 ifndef OS
 	cd $(DESTDIR)$(PREFIX)/lib && \
 		if [ -f $(OUTPUT).so ]; then \
