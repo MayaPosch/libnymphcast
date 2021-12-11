@@ -108,6 +108,7 @@ public:
 	uint8_t volumeSet(uint32_t handle, uint8_t volume);
 	uint8_t volumeUp(uint32_t handle);
 	uint8_t volumeDown(uint32_t handle);
+	uint8_t volumeMute(uint32_t handle);
 	
 	uint8_t playbackStart(uint32_t handle);
 	uint8_t playbackStop(uint32_t handle);

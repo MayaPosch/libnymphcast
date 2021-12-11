@@ -935,6 +935,33 @@ uint8_t NymphCastClient::volumeDown(uint32_t handle) {
 }
 
 
+// --- VOLUME MUTE ---
+/**
+	Mute the volume on the remote server.
+	
+	@param handle 	The handle for the remote server.
+	
+	@return 0 if the operation succeeded.
+*/
+uint8_t NymphCastClient::volumeMute(uint32_t handle) {
+	// uint8 volume_mute()
+	std::vector<NymphType*> values;
+	std::string result;
+	NymphType* returnValue = 0;
+	if (!NymphRemoteServer::callMethod(handle, "volume_mute", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
+	
+	// Check result.
+	uint8_t res = returnValue->getUint8();	
+	delete returnValue;	
+	
+	return res;
+}
+
+
 // --- PLAYBACK START ---
 /**
 	Start or resume playback on the remote.
