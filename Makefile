@@ -6,6 +6,10 @@
 
 export TOP := $(CURDIR)
 
+ifndef ANDROID_ABI_LEVEL
+ANDROID_ABI_LEVEL := 21
+endif
+
 ifdef ANDROID
 TOOLCHAIN_PREFIX := arm-linux-androideabi-
 ARCH := android-armv7/
@@ -35,17 +39,17 @@ UMCH := $(shell uname -m)
 
 ifdef ANDROID
 #GCC := $(TOOLCHAIN_PREFIX)g++$(TOOLCHAIN_POSTFIX)
-GCC := armv7a-linux-androideabi21-clang++$(TOOLCHAIN_POSTFIX)
+GCC := armv7a-linux-androideabi$(ANDROID_ABI_LEVEL)-clang++$(TOOLCHAIN_POSTFIX)
 MAKEDIR = mkdir -p
 RM = rm
 AR = $(TOOLCHAIN_PREFIX)ar
 else ifdef ANDROID64
-GCC := aarch64-linux-android21-clang++$(TOOLCHAIN_POSTFIX)
+GCC := aarch64-linux-android$(ANDROID_ABI_LEVEL)-clang++$(TOOLCHAIN_POSTFIX)
 MAKEDIR = mkdir -p
 RM = rm
 AR = $(TOOLCHAIN_PREFIX)ar
 else ifdef ANDROIDX86
-GCC := i686-linux-android21-clang++$(TOOLCHAIN_POSTFIX)
+GCC := i686-linux-android$(ANDROID_ABI_LEVEL)-clang++$(TOOLCHAIN_POSTFIX)
 MAKEDIR = mkdir -p
 RM = rm
 AR = $(TOOLCHAIN_PREFIX)ar
