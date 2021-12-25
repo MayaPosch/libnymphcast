@@ -158,6 +158,7 @@ void NymphCastClient::MediaStatusCallback(uint32_t session, NymphMessage* msg, v
 	NymphType* volume;
 	NymphType* artist;
 	NymphType* title;
+	NymphType* stopped;
 	if (!nstruct->getStructValue("status", status)) {
 		std::cerr << "MediaStatusCallback: Failed to find value 'status' in struct." << std::endl;
 		msg->discard();
@@ -194,12 +195,19 @@ void NymphCastClient::MediaStatusCallback(uint32_t session, NymphMessage* msg, v
 		return;
 	}
 	
+	if (!nstruct->getStructValue("stopped", stopped)) {
+		std::cerr << "MediaStatusCallback: Failed to find value 'stopped' in struct." << std::endl;
+		msg->discard();
+		return;
+	}
+	
 	stat.status = (NymphRemoteStatus) status->getUint32();
 	stat.duration = duration->getUint64();
 	stat.position = position->getDouble();
 	stat.volume = volume->getUint8();
 	stat.artist = artist->getString();
 	stat.title = title->getString();
+	stat.stopped = stopped->getBool();
 	
 	if (statusUpdateFunction) {
 		statusUpdateFunction(session, stat);

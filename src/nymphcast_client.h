@@ -40,6 +40,7 @@ enum NymphRemoteStatus {
 struct NymphPlaybackStatus {
 	NymphRemoteStatus status;
 	bool error;
+	bool stopped;
 	bool playing;
 	uint64_t duration;
 	double position;
@@ -52,7 +53,8 @@ struct NymphPlaybackStatus {
 enum NymphMediaFileType {
 	FILE_TYPE_AUDIO = 0,
 	FILE_TYPE_VIDEO = 1,
-	FILE_TYPE_IMAGE = 2
+	FILE_TYPE_IMAGE = 2,
+	FILE_TYPE_PLAYLIST = 3
 };
 
 
