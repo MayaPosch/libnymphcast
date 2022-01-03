@@ -653,26 +653,21 @@ bool NymphCastClient::playShare(NymphMediaFile file, std::vector<NymphCastRemote
 	}
 	
 	// Encode receivers.
-	//NymphType* recArr = new NymphArray();
 	std::vector<NymphType*>* recArr = new std::vector<NymphType*>();
 	for (int i = 0; i < receivers.size(); ++i) {
-		//NymphStruct* remote = new NymphStruct;
 		std::map<std::string, NymphPair>* pairs = new std::map<std::string, NymphPair>();
 		NymphPair pair;
 		std::string* key;
-		//remote->addPair("name", new NymphString(receivers[i].name));
 		key = new std::string("name");
 		pair.key = new NymphType(key, true);
 		pair.value = new NymphType(&receivers[i].name);
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 		
-		//remote->addPair("ipv4", new NymphString(receivers[i].ipv4));
 		key = new std::string("ipv4");
 		pair.key = new NymphType(key, true);
 		pair.value = new NymphType(&receivers[i].ipv4);
 		pairs->insert(std::pair<std::string, NymphPair>(*key, pair));
 		
-		//remote->addPair("ipv6", new NymphString(receivers[i].ipv6));
 		key = new std::string("ipv6");
 		pair.key = new NymphType(key, true);
 		pair.value = new NymphType(&receivers[i].ipv6);
@@ -718,25 +713,20 @@ bool NymphCastClient::playShare(NymphMediaFile file, std::vector<NymphCastRemote
 	@return True if the operation succeeded.
 */
 bool NymphCastClient::addSlaves(uint32_t handle, std::vector<NymphCastRemote> remotes) {
-	//NymphArray* sArr = new NymphArray;
 	std::vector<NymphType*>* sArr = new std::vector<NymphType*>();
 	for (int i = 0; i < remotes.size(); ++i) {
-		//NymphStruct* remote = new NymphStruct;
 		std::map<std::string, NymphPair>* remote = new std::map<std::string, NymphPair>;
-		//remote->addPair("name", new NymphString(remotes[i].name));
 		NymphPair pair;
 		std::string* key = new std::string("name");
 		pair.key = new NymphType(key, true);
 		pair.value = new NymphType(&remotes[i].name);
 		remote->insert(std::pair<std::string, NymphPair>(*key, pair));
 	
-		//remote->addPair("ipv4", new NymphString(remotes[i].ipv4));
 		key = new std::string("ipv4");
 		pair.key = new NymphType(key, true);
 		pair.value = new NymphType(&remotes[i].ipv4);
 		remote->insert(std::pair<std::string, NymphPair>(*key, pair));
 		
-		//remote->addPair("ipv6", new NymphString(remotes[i].ipv6));
 		key = new std::string("ipv6");
 		pair.key = new NymphType(key, true);
 		pair.value = new NymphType(&remotes[i].ipv6);
