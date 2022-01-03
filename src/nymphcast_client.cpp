@@ -14,9 +14,12 @@
 
 #include <iostream>
 #include <vector>
-//#include <filesystem> 		// C++17
 
-//namespace fs = std::filesystem;
+#ifdef _WIN32
+#include <filesystem> 		// C++17
+
+namespace fs = std::filesystem;
+#endif
 
 #include <Poco/Path.h>
 #include <Poco/File.h>
@@ -769,11 +772,20 @@ bool NymphCastClient::castFile(uint32_t handle, std::string filename) {
 		return false;
 	}
 
+	// Using POCO instead of std::filesystem here for now, due to lack of support on Android.
+	// NDK R22 is supposed to include support, but has header-related issues:
+	// https://github.com/android/ndk/issues/609
 	/* fs::path filePath(filename);
 	if (!fs::exists(filePath)) { */
 	Poco::File file(filename);
-	if (!file.exists()) {
-		std::cerr << "File '" << filename << "' doesn't exist." << std::endl;
+	try {
+		if (!file.exists()) {
+			std::cerr << "File '" << filename << "' doesn't exist." << std::endl;
+			return false;
+		}
+	}
+	catch(Poco::PathSyntaxException &e) {
+		std::cerr << "Path syntax exception: " << e.displayText() << std::endl;
 		return false;
 	}
 	
@@ -782,21 +794,24 @@ bool NymphCastClient::castFile(uint32_t handle, std::string filename) {
 	if (source.is_open()) {
 		source.close();
 	}
-	
+
+#ifdef _WIN32	
+	// Use std::filesystem on Windows to convert the path from Unicode.
+	source.open(fs::u8path(filename), std::ios::binary);
+#else
 	source.open(filename, std::ios::binary);
+#endif
 	if (!source.good()) {
 		std::cerr << "Failed to read input file '" << filename << "'" << std::endl;
 		return false;
 	}
 	
 	// Start the session
-	// TODO: send meta data via this method.
 	std::vector<NymphType*> values;
 	std::string result;
 	NymphType* returnValue = 0;
 	
 	std::map<std::string, NymphPair>* pairs = new std::map<std::string, NymphPair>();
-	//ms->addPair("filesize", new NymphUint32(fs::file_size(filePath)));
 	std::string* key = new std::string("filesize");
 	NymphPair pair;
 	pair.key = new NymphType(key, true);
