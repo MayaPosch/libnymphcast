@@ -1212,6 +1212,7 @@ NymphPlaybackStatus NymphCastClient::playbackStatus(uint32_t handle) {
 	NymphType* volume;
 	NymphType* artist;
 	NymphType* title;
+	NymphType* stopped;
 	if (!nstruct->getStructValue("status", status)) {
 		std::cerr << "Failed to find value 'status' in struct." << std::endl;
 		return stat;
@@ -1242,12 +1243,18 @@ NymphPlaybackStatus NymphCastClient::playbackStatus(uint32_t handle) {
 		return stat;
 	}
 	
+	if (!nstruct->getStructValue("stopped", stopped)) {
+		std::cerr << "MediaStatusCallback: Failed to find value 'stopped' in struct." << std::endl;
+		return stat;
+	}
+	
 	stat.status = (NymphRemoteStatus) status->getUint32();
 	stat.duration = duration->getUint64();
 	stat.position = position->getDouble();
 	stat.volume = volume->getUint8();
 	stat.artist = artist->getString();
 	stat.title = title->getString();
+	stat.stopped = stopped->getBool();
 	
 	delete nstruct;
 	
