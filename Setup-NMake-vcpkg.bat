@@ -67,12 +67,6 @@ if exist "%NYMPHRPC_ROOT%\include\nymph\nymph.h" (
 
     git clone --depth 1 https://github.com/MayaPosch/NymphRPC.git
 
-    :: TODO temporary: Copy/overwrite Setup and NMakefile for NymphRPC.
-    if exist "D:\Own\Martin" (
-        xcopy /y ..\MartinMoene\NymphCast-Scenarios\code\NMake\NymphRPC\NMakefile NymphRPC
-        xcopy /y ..\MartinMoene\NymphCast-Scenarios\code\NMake\NymphRPC\Setup-NMake-vcpkg.bat NymphRPC
-    )
-
     cd NymphRPC & call Setup-NMake-vcpkg.bat clean all install & cd ..
 
     rmdir /s /q NymphRPC
