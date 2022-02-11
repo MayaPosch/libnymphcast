@@ -8,6 +8,7 @@
 # Usage: nmake -f NMakefile [definitions] [target]
 #
 # Definitions:
+# - NC_STATIC={0|1}
 # - NC_CONFIG={Debug|Release}
 # - NC_CPPSTD={flag}
 # - NC_LNKCRT={flag}
@@ -56,6 +57,12 @@
 # Configuration:
 
 # Note: no space before macro being defined.
+
+!ifdef NC_STATIC
+LIB_STATIC = $(NC_STATIC)
+!else
+LIB_STATIC = 0
+!endif
 
 !ifdef NC_CONFIG
 LIB_CONFIG = $(NC_CONFIG)
@@ -180,7 +187,15 @@ LIB_LIBS  = \
 	Ws2_32.lib \
 	iphlpapi.lib
 
-CXXFLAGS = $(LIB_CPPSTD) -EHsc -Zi -MP $(LIB_LNKCRT) $(LIB_WARNING) $(LIB_OPTIMIZATION) $(LIB_INCLUDE)
+!if $(LIB_STATIC) != 0
+LIB_DEFS_STATIC = -DPOCO_STATIC
+!else
+LIB_DEFS_STATIC =
+!endif
+
+LIB_FLAGS = # -Zc:strictStrings-
+LIB_DEFS  = $(LIB_DEFS_STATIC) 
+CXXFLAGS  = $(LIB_CPPSTD) -EHsc -Zi -MP $(LIB_LNKCRT) $(LIB_FLAGS) $(LIB_WARNING) $(LIB_OPTIMIZATION) $(LIB_DEFS) $(LIB_INCLUDE)
 
 INST_FOLDER_INC = $(INSTALL_PREFIX)\include
 INST_FOLDER_LIB = $(INSTALL_PREFIX)\lib
@@ -227,6 +242,7 @@ all: print-configuration lib
 print-configuration:
 	@echo.
 	@echo Building static library '$(LIB_OUTPUT)' with Configuration:
+	@echo "- LIB_STATIC      : '$(LIB_STATIC)'"
 	@echo "- LIB_CONFIG      : '$(LIB_CONFIG)'"
 	@echo "- LIB_BITS        : '$(LIB_BITS)'"
 	@echo "- LIB_CPPSTD      : '$(LIB_CPPSTD)'"
