@@ -323,11 +323,12 @@ std::string NymphCastClient::getApplicationList(uint32_t handle) {
 	@return String with any response from the remote.
 */
 std::string NymphCastClient::sendApplicationMessage(uint32_t handle, std::string &appId, 
-																		std::string &message) {
-	// string app_send(uint32 appId, string data)
+														std::string &message, uint8_t format) {
+	// string app_send(uint32 appId, string data, uint8 format)
 	std::vector<NymphType*> values;
 	values.push_back(new NymphType(&appId));
 	values.push_back(new NymphType(&message));
+	values.push_back(new NymphType(format));
 	NymphType* returnValue = 0;
 	std::string result;
 	if (!NymphRemoteServer::callMethod(handle, "app_send", values, returnValue, result)) {

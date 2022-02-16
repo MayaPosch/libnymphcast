@@ -92,7 +92,8 @@ public:
 	void setApplicationCallback(AppMessageFunction function);
 	void setStatusUpdateCallback(StatusUpdateFunction function);
 	std::string getApplicationList(uint32_t handle);
-	std::string sendApplicationMessage(uint32_t handle, std::string &appId, std::string &message);
+	std::string sendApplicationMessage(uint32_t handle, std::string &appId, std::string &message, 
+																				uint8_t format = 0);
 	std::string loadResource(uint32_t handle, std::string &appId, std::string &name);
 
 	std::vector<NymphCastRemote> findServers();
