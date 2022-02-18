@@ -17,6 +17,7 @@ echo.
 
 set INSTALL_PREFIX=D:\Libraries\LibNymphCast
 
+:: Note: static building does not yet work.
 set NC_STATIC=0
 :: set NC_STATIC=1
 
@@ -32,17 +33,18 @@ set VCPKG_TRIPLET=x64-windows
 if [%NC_STATIC%] == [1] (
     set NC_LNKCRT=-MT
     set VCPKG_TRIPLET=x64-windows-static
+    echo [Setup LibNymphCast: static build does not yet work. Continuing.]
 )
 
 :: Check for 64-bit Native Tools Command Prompt
 
-if not [%VSCMD_ARG_TGT_ARCH%] == [x64] (
-    echo [Make sure to run these commands in a '64-bit Native Tools Command Prompt'; expecting 'x64', got '%VSCMD_ARG_TGT_ARCH%'. Bailing out.]
+if not [%VSCMD_ARG_TGT_ARCH%] == [%NC_TGT_ARCH%] (
+    echo [Setup LibNymphCast: Make sure to run these commands in a '64-bit Native Tools Command Prompt'; expecting 'x64', got '%VSCMD_ARG_TGT_ARCH%'. Bailing out.]
     endlocal & goto :EOF
 )
 
 if [%VCPKG_ROOT%] == [] (
-    echo [Make sure environment variable 'VCPKG_ROOT' points to your vcpkg installation; it's empty or does not exist. Bailing out.]
+    echo [Setup LibNymphCast: Make sure environment variable 'VCPKG_ROOT' points to your vcpkg installation; it's empty or does not exist. Bailing out.]
     endlocal & goto :EOF
 )
 
@@ -66,9 +68,9 @@ set POCO_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
 :: NymphRPC - Download and build NymphRPC dependency:
 
 if exist "%NYMPHRPC_ROOT%\include\nymph\nymph.h" (
-    echo Setup LibNymphCast:: NymphRPC has been installed at "%NYMPHRPC_ROOT%".
+    echo Setup LibNymphCast: NymphRPC has been installed at "%NYMPHRPC_ROOT%".
 ) else (
-    echo Setup LibNymphCast:: NymphRPC not found at "%NYMPHRPC_ROOT%".
+    echo Setup LibNymphCast: NymphRPC not found at "%NYMPHRPC_ROOT%".
 
     git clone --depth 1 https://github.com/MayaPosch/NymphRPC.git
 
