@@ -27,12 +27,6 @@ namespace fs = std::filesystem;
 #include "nyansd.h"
 
 
-enum {
-	NYMPH_SEEK_TYPE_BYTES = 1,
-	NYMPH_SEEK_TYPE_PERCENTAGE = 2
-};
-
-
 void logFunction(int level, std::string logStr) {
 	std::cout << level << " - " << logStr << std::endl;
 }
@@ -1120,50 +1114,25 @@ uint8_t NymphCastClient::playbackForward(uint32_t handle) {
 	
 	@return 0 if the operation succeeded.
 */
-uint8_t NymphCastClient::playbackSeek(uint32_t handle, uint64_t location) {
+uint8_t NymphCastClient::playbackSeek(uint32_t handle, NymphSeekType type, uint64_t value) {
 	// uint8 playback_seek(array)
 	std::vector<NymphType*> values;
 	std::string result;
 	NymphType* returnValue = 0;
-	
 	std::vector<NymphType*>* valArray = new std::vector<NymphType*>();
-	valArray->push_back(new NymphType(NYMPH_SEEK_TYPE_BYTES));
-	valArray->push_back(new NymphType(location));	
-	values.push_back(new NymphType(valArray, true));
 	
-	if (!NymphRemoteServer::callMethod(handle, "playback_seek", values, returnValue, result)) {
-		std::cout << "Error calling remote method: " << result << std::endl;
-		NymphRemoteServer::disconnect(handle, result);
-		return 0;
+	if (type == NYMPH_SEEK_TYPE_PERCENTAGE) {
+		valArray->push_back(new NymphType((uint8_t) NYMPH_SEEK_TYPE_PERCENTAGE));
+		valArray->push_back(new NymphType((uint8_t) value));
+	}
+	else {
+		std::vector<NymphType*>* valArray = new std::vector<NymphType*>();
+		valArray->push_back(new NymphType((uint8_t) NYMPH_SEEK_TYPE_BYTES));
+		valArray->push_back(new NymphType((uint64_t) value));
 	}
 	
-	// Check result.
-	uint8_t res = returnValue->getUint8();	
-	delete returnValue;	
-	
-	return res;
-}
-
-
-// --- PLAYBACK SEEK ---
-/**
-	Seek to percentage of the media file length.
-	
-	@param handle 		The handle for the remote server.
-	@param percentage	New percentage in the file of media length.
-	
-	@return 0 if the operation succeeded.
-*/
-uint8_t NymphCastClient::playbackSeek(uint32_t handle, uint8_t percentage) {
-	// uint8 playback_seek(array)
-	std::vector<NymphType*> values;
-	std::string result;
-	NymphType* returnValue = 0;
-	
-	std::vector<NymphType*>* valArray = new std::vector<NymphType*>();
-	valArray->push_back(new NymphType(NYMPH_SEEK_TYPE_PERCENTAGE));
-	valArray->push_back(new NymphType(percentage));	
 	values.push_back(new NymphType(valArray, true));
+	
 	if (!NymphRemoteServer::callMethod(handle, "playback_seek", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
 		NymphRemoteServer::disconnect(handle, result);

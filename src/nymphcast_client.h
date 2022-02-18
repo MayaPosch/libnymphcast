@@ -57,6 +57,11 @@ enum NymphMediaFileType {
 	FILE_TYPE_PLAYLIST = 3
 };
 
+enum NymphSeekType {
+	NYMPH_SEEK_TYPE_BYTES = 1,
+	NYMPH_SEEK_TYPE_PERCENTAGE = 2
+};
+
 
 struct NymphMediaFile {
 	NymphCastRemote mediaserver;
@@ -118,8 +123,7 @@ public:
 	uint8_t playbackPause(uint32_t handle);
 	uint8_t playbackRewind(uint32_t handle);
 	uint8_t playbackForward(uint32_t handle);
-	uint8_t playbackSeek(uint32_t handle, uint64_t location);
-	uint8_t playbackSeek(uint32_t handle, uint8_t percentage);
+	uint8_t playbackSeek(uint32_t handle, NymphSeekType type, uint64_t value);
 	NymphPlaybackStatus playbackStatus(uint32_t handle);
 	
 	uint8_t cycleSubtitles(uint32_t handle);
