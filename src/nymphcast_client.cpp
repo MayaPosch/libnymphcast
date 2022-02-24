@@ -1136,7 +1136,7 @@ uint8_t NymphCastClient::playbackSeek(uint32_t handle, NymphSeekType type, uint6
 	if (!NymphRemoteServer::callMethod(handle, "playback_seek", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
 		NymphRemoteServer::disconnect(handle, result);
-		return 0;
+		return 1;
 	}
 	
 	// Check result.
