@@ -7,7 +7,7 @@
 export TOP := $(CURDIR)
 
 ifndef ANDROID_ABI_LEVEL
-ANDROID_ABI_LEVEL := 21
+ANDROID_ABI_LEVEL := 24
 endif
 
 ifdef ANDROID
@@ -25,6 +25,12 @@ endif
 else ifdef ANDROIDX86
 TOOLCHAIN_PREFIX := i686-linux-android-
 ARCH := android-i686/
+ifdef OS
+TOOLCHAIN_POSTFIX := .cmd
+endif
+else ifdef ANDROIDX64
+TOOLCHAIN_PREFIX := x86_64-linux-android-
+ARCH := android-x86_64/
 ifdef OS
 TOOLCHAIN_POSTFIX := .cmd
 endif
@@ -50,6 +56,11 @@ RM = rm
 AR = $(TOOLCHAIN_PREFIX)ar
 else ifdef ANDROIDX86
 GCC := i686-linux-android$(ANDROID_ABI_LEVEL)-clang++$(TOOLCHAIN_POSTFIX)
+MAKEDIR = mkdir -p
+RM = rm
+AR = $(TOOLCHAIN_PREFIX)ar
+else ifdef ANDROIDX64
+GCC := x86_64-linux-android$(ANDROID_ABI_LEVEL)-clang++$(TOOLCHAIN_POSTFIX)
 MAKEDIR = mkdir -p
 RM = rm
 AR = $(TOOLCHAIN_PREFIX)ar
@@ -86,6 +97,8 @@ ifdef ANDROID
 CFLAGS += -fPIC
 else ifdef ANDROIDX86
 CFLAGS += -fPIC
+else ifdef ANDROIDX64
+CFLAGS += -fPIC
 endif
 
 ifdef ANDROID64
@@ -98,8 +111,10 @@ ifdef OS
 ifndef ANDROID
 ifndef ANDROID64
 ifndef ANDROIDX86
+ifndef ANDROIDX64
 	CFLAGS := $(CFLAGS) -U__STRICT_ANSI__ -DPOCO_WIN32_UTF8
 	LIBS += -lws2_32
+endif
 endif
 endif
 endif
