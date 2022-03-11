@@ -45,6 +45,7 @@ struct NymphPlaybackStatus {
 	uint64_t duration;
 	double position;
 	uint8_t volume;
+	bool subtitles_off;
 	std::string title;
 	std::string artist;
 };
@@ -129,6 +130,7 @@ public:
 	uint8_t cycleSubtitles(uint32_t handle);
 	uint8_t cycleAudio(uint32_t handle);
 	uint8_t cycleVideo(uint32_t handle);
+	uint8_t enableSubtitles(uint32_t handle, bool state);
 };
 
 

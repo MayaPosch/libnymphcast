@@ -156,6 +156,7 @@ void NymphCastClient::MediaStatusCallback(uint32_t session, NymphMessage* msg, v
 	NymphType* artist;
 	NymphType* title;
 	NymphType* stopped;
+	NymphType* subdis;
 	if (!nstruct->getStructValue("status", status)) {
 		std::cerr << "MediaStatusCallback: Failed to find value 'status' in struct." << std::endl;
 		msg->discard();
@@ -198,6 +199,11 @@ void NymphCastClient::MediaStatusCallback(uint32_t session, NymphMessage* msg, v
 		return;
 	}
 	
+	if (!nstruct->getStructValue("subtitle_disable", subdis)) {
+		std::cerr << "MediaStatusCallback: Failed to find value 'subtitle_disable' in struct." << std::endl;
+		return;
+	}
+	
 	stat.status = (NymphRemoteStatus) status->getUint32();
 	stat.duration = duration->getUint64();
 	stat.position = position->getDouble();
@@ -205,6 +211,7 @@ void NymphCastClient::MediaStatusCallback(uint32_t session, NymphMessage* msg, v
 	stat.artist = artist->getString();
 	stat.title = title->getString();
 	stat.stopped = stopped->getBool();
+	stat.subtitles_off = subdis->getBool();
 	
 	if (statusUpdateFunction) {
 		statusUpdateFunction(session, stat);
@@ -1183,6 +1190,7 @@ NymphPlaybackStatus NymphCastClient::playbackStatus(uint32_t handle) {
 	NymphType* artist;
 	NymphType* title;
 	NymphType* stopped;
+	NymphType* subdis;
 	if (!nstruct->getStructValue("status", status)) {
 		std::cerr << "Failed to find value 'status' in struct." << std::endl;
 		return stat;
@@ -1218,6 +1226,11 @@ NymphPlaybackStatus NymphCastClient::playbackStatus(uint32_t handle) {
 		return stat;
 	}
 	
+	if (!nstruct->getStructValue("subtitle_disable", subdis)) {
+		std::cerr << "MediaStatusCallback: Failed to find value 'subtitle_disable' in struct." << std::endl;
+		return stat;
+	}
+	
 	stat.status = (NymphRemoteStatus) status->getUint32();
 	stat.duration = duration->getUint64();
 	stat.position = position->getDouble();
@@ -1225,6 +1238,7 @@ NymphPlaybackStatus NymphCastClient::playbackStatus(uint32_t handle) {
 	stat.artist = artist->getString();
 	stat.title = title->getString();
 	stat.stopped = stopped->getBool();
+	stat.subtitles_off = subdis->getBool();
 	
 	delete nstruct;
 	
@@ -1282,6 +1296,27 @@ uint8_t NymphCastClient::cycleVideo(uint32_t handle) {
 	std::string result;
 	NymphType* returnValue = 0;
 	if (!NymphRemoteServer::callMethod(handle, "cycle_video", values, returnValue, result)) {
+		std::cout << "Error calling remote method: " << result << std::endl;
+		NymphRemoteServer::disconnect(handle, result);
+		return 0;
+	}
+	
+	// Check result.
+	uint8_t res = returnValue->getUint8();	
+	delete returnValue;	
+	
+	return res;
+}
+
+
+// --- ENABLE SUBTITLES ---
+// Set subtitles on or off.
+uint8_t NymphCastClient::enableSubtitles(uint32_t handle, bool state) {
+	// uint8 subtitles_toggle()
+	std::vector<NymphType*> values;
+	std::string result;
+	NymphType* returnValue = 0;
+	if (!NymphRemoteServer::callMethod(handle, "subtitles_set", values, returnValue, result)) {
 		std::cout << "Error calling remote method: " << result << std::endl;
 		NymphRemoteServer::disconnect(handle, result);
 		return 0;
