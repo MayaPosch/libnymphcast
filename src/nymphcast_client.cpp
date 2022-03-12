@@ -1314,6 +1314,7 @@ uint8_t NymphCastClient::cycleVideo(uint32_t handle) {
 uint8_t NymphCastClient::enableSubtitles(uint32_t handle, bool state) {
 	// uint8 subtitles_toggle()
 	std::vector<NymphType*> values;
+	values.push_back(new NymphType(state));
 	std::string result;
 	NymphType* returnValue = 0;
 	if (!NymphRemoteServer::callMethod(handle, "subtitles_set", values, returnValue, result)) {
