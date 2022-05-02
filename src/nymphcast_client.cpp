@@ -402,6 +402,39 @@ bool isDuplicateName(std::vector<NymphCastRemote> &remotes, NymphCastRemote &rm)
 }
 
 
+// Remove a loopback response if a non-loopback address exists.
+void removeLoopback(std::vector<NYSD_service> &responses) {
+	std::vector<NYSD_service> out;
+	for (uint32_t i = 0; i < responses.size(); ++i) {
+		// If the response is an IPv4 loopback (127.0.0.1, 0x7F000001), and we find a duplicate
+		// record with different IP, skip it.
+		std::cout << "IPv4: " << std::hex << responses[i].ipv4 << std::endl;
+		if (responses[i].ipv4 == 0x100007f) {
+			std::cout << "Detected localhost response." << std::endl;
+			bool skip = false;
+			for (uint32_t j = 0; j < responses.size(); ++j) {
+				if (j != i && responses[i].hostname == responses[j].hostname) {
+					// Skip this entry.
+					std::cout << "Skipping " << responses[i].hostname << std::endl;
+					skip = true;
+					break;
+				}
+			}
+			
+			if (!skip) {
+				// No alternative. Use.
+				out.push_back(responses[i]);
+			}
+		}
+		else {
+			out.push_back(responses[i]);
+		}
+	}
+	
+	responses = out;
+}
+
+
 // --- FIND SERVERS ---
 /**
 	Find remote NymphCast servers using a NyanSD query.
@@ -421,8 +454,13 @@ std::vector<NymphCastRemote> NymphCastClient::findServers() {
 	if (!NyanSD::sendQuery(4004, queries, responses)) { return remotes; }
 	
 	// Process responses. 
+	// Filter out loopback addresses.
+	removeLoopback(responses);
+	
 	// Check for potential duplicate responses.
-	for (int i = 0; i < responses.size(); ++i) {
+	// We keep the 'slowest' responses (back of array), as they are usually from external IPs,
+	// Rather than virtual connections (from VirtualBox, VMWare, etc.).
+	for (int i = responses.size() - 1; i >= 0; --i) {
 		NymphCastRemote rm;
 		rm.ipv4 = NyanSD::ipv4_uintToString(responses[i].ipv4);
 		rm.ipv6 = responses[i].ipv6;
@@ -430,6 +468,7 @@ std::vector<NymphCastRemote> NymphCastClient::findServers() {
 		rm.port = responses[i].port;
 		
 		// Check for duplicates.
+		// Prefer non-loopback addresses over a loopback address.
 		if (isDuplicate(remotes, rm) || isDuplicateName(remotes, rm)) {
 			std::cout << "Skipping duplicate for " << rm.name << std::endl;
 			continue;
