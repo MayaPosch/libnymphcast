@@ -77,7 +77,7 @@ AR = ar
 endif
 
 OUTPUT := libnymphcast
-VERSION := 0.1
+VERSION := 0.2
 
 # Use -soname on Linux/BSD, -install_name on Darwin (MacOS).
 SONAME = -soname
