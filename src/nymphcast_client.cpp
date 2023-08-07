@@ -95,7 +95,7 @@ void NymphCastClient::MediaSeekCallback(uint32_t session, NymphMessage* msg, voi
 	// Seek from the beginning of the file.
 	std::cout << "Seeking from file beginning..." << std::endl;
 	source.seekg(0);
-	source.seekg(position);
+	source.seekg((std::streampos) position);
 	
 	msg->discard();
 	
