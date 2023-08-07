@@ -177,7 +177,8 @@ clean-test-server:
 PREFIX ?= /usr
 ifdef OS
 # Assume 64-bit MSYS2
-PREFIX = /mingw64
+#PREFIX = /mingw64
+PREFIX = $(MINGW_PREFIX)
 endif
 
 .PHONY: install
