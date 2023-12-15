@@ -39,12 +39,18 @@ void logFunction(int level, std::string logStr) {
 void NymphCastClient::MediaReadCallback(uint32_t session, NymphMessage* msg, void* data) {
 	std::cout << "Media Read callback function called.\n";
 	
-	// Call the 'session_data' remote function with new data buffer.
-	// Read N bytes from the file.
-	// TODO: receive desired block size here from remote?
+	// Call the 'session_data' remote function after reading N bytes from the file.
+	// Check if a desired block size is set, if not: use default size.
+	uint32_t bufLenDefault = 200 * 1024;
+	uint32_t bufLen = msg->parameters()[0]->getUint32();
+	if (bufLen == 0) { 
+		bufLen = bufLenDefault; 
+	}
+	else {
+		bufLen *= 1024;
+	}
 	
-	// FIXME: we're using 200 kB blocks for now. This should be made adjustable by the remote.
-	uint32_t bufLen = 200 * 1024;
+	// Allocate a new buffer. This will have the remote's specified or the custom size.
 	char* buffer = new char[bufLen];
 	source.read(buffer, bufLen);
 	
@@ -92,6 +98,17 @@ void NymphCastClient::MediaSeekCallback(uint32_t session, NymphMessage* msg, voi
 		source.clear();
 	}
 	
+	// Call the 'session_data' remote function after reading N bytes from the file.
+	// Check if a desired block size is set, if not: use default size.
+	uint32_t bufLenDefault = 200 * 1024;
+	uint32_t bufLen = msg->parameters()[1]->getUint32();
+	if (bufLen == 0) { 
+		bufLen = bufLenDefault; 
+	}
+	else {
+		bufLen *= 1024;
+	}
+	
 	// Seek from the beginning of the file.
 	std::cout << "Seeking from file beginning..." << std::endl;
 	source.seekg(0);
@@ -104,8 +121,8 @@ void NymphCastClient::MediaSeekCallback(uint32_t session, NymphMessage* msg, voi
 	// Read N bytes from the file.
 	// TODO: receive desired block size here from remote?
 	
-	// FIXME: we're using 200 kB blocks for now. This should be made adjustable by the remote.
-	uint32_t bufLen = 200 * 1024;
+	// Allocate a new buffer. This will have the remote's specified or the custom size.
+	//uint32_t bufLen = 200 * 1024;
 	char* buffer = new char[bufLen];
 	source.read(buffer, bufLen);
 	
