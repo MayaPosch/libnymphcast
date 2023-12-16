@@ -94,12 +94,12 @@ char* NC_sendApplicationMessage(uint32_t handle, char* appId, char* message, uin
 								char* response, uint32_t* length);
 bool NC_loadResource(uint32_t handle, char* appId, char* name, char* response, uint32_t* length);
 
-bool NC_findServers(NC_NymphCastRemote* servers, uint32_t* count);
-bool NC_findShares(NC_NymphCastRemote* servers, uint32_t* count);
+bool NC_findServers(NC_NymphCastRemote** servers, uint32_t* count);
+bool NC_findShares(NC_NymphCastRemote** servers, uint32_t* count);
 bool NC_connectServer(char* ip, uint32_t port, uint32_t* handle);
 bool NC_disconnectServer(uint32_t handle);
 
-bool NC_getShares(NC_NymphCastRemote mediaserver, NC_NymphMediaFile* files, uint32_t* count);
+bool NC_getShares(NC_NymphCastRemote mediaserver, NC_NymphMediaFile** files, uint32_t* count);
 bool NC_playShare(NC_NymphMediaFile file, NC_NymphCastRemote* receivers, uint32_t count);
 
 bool NC_addSlaves(uint32_t handle, NC_NymphCastRemote* remotes, uint32_t count);

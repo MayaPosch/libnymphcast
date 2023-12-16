@@ -16,6 +16,7 @@
 #include "../src/nymphcast_client_c.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 
 
 int main() {
@@ -23,15 +24,15 @@ int main() {
 	if (!init_nymphCastClient()) { return 1; }
 	
 	// Obtain list of available NymphCast receivers (NCS).
-	NC_NymphCastRemote* receivers;
+	NC_NymphCastRemote* receivers = NULL;
 	uint32_t recCount;
-	if (!NC_findServers(receivers, &recCount)) { return 1; }
+	if (!NC_findServers(&receivers, &recCount)) { return 1; }
 	
 	// Print out list.
-	printf("Receivers:\n#\tName\tIPv4\tIPv6\t\tPort\n");
+	printf("\nReceivers:\n#\tName\t\tIPv4\t\tIPv6\t\t\t\t\t\t\t\t\tPort\n");
 	for (uint32_t i = 0; i < recCount; i++) {
 		// Iterate through each entry and print out details.
-		printf("%d:\t%s\t%s\t%s\t%d\n", i, receivers[i].name, 
+		printf("%d:\t%s\t\%s\t%s\t%d\n", i, receivers[i].name, 
 						receivers[i].ipv4, receivers[i].ipv6, receivers[i].port);
 	}
 	
@@ -39,12 +40,12 @@ int main() {
 	//NC_NymphPlaybackStatus stat = NC_playbackStatus(handle);
 	
 	// Obtain list of available NymphCast MediaServers (NCMS).
-	NC_NymphCastRemote* shares;
+	NC_NymphCastRemote* shares = NULL;
 	uint32_t shareCount;
-	if (!NC_findShares(shares, &shareCount)) { return 1; }
+	if (!NC_findShares(&shares, &shareCount)) { return 1; }
 	
 	// Print out list.
-	printf("MediaServers:\n#\tName\tIPv4\tIPv6\t\tPort\n");
+	printf("\nMediaServers:\n#\tName\t\tIPv4\t\tIPv6\t\t\t\t\t\t\t\t\tPort\n");
 	for (uint32_t i = 0; i < shareCount; i++) {
 		// Iterate through each entry and print out details.
 		printf("%d:\t%s\t%s\t%s\t%d\n", i, shares[i].name, 
@@ -53,10 +54,10 @@ int main() {
 	
 	// Obtain number of files shared by each NCMS instance and print out.
 	if (shareCount > 0) {
-		NC_NymphMediaFile* files;
+		NC_NymphMediaFile* files = NULL;
 		uint32_t filecount;
 		for (uint32_t j = 0; j < shareCount; j++) {
-			if (!NC_getShares(shares[j], files, &filecount)) {
+			if (!NC_getShares(shares[j], &files, &filecount)) {
 				return 1;
 			}
 			
@@ -65,6 +66,8 @@ int main() {
 				printf("\t%s\t%s\n", files[k].section, files[k].name);
 			}
 		}
+		
+		free(files);
 	}
 	
 	// TODO: if at least one NCMS and one non-playing NCS instance exist, play back audio file
@@ -72,6 +75,8 @@ int main() {
 	
 	
 	// Clean up.
+	free(receivers);
+	free(shares);
 	delete_nymphCastClient();
 	
 	return 0;

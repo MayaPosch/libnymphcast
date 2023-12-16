@@ -6,6 +6,7 @@ TARGET := nymphcast_client
 GCC ?= gcc
 GPP ?= g++
 MKDIR := mkdir -p
+RM	:= rm
 
 ARCH := $(shell g++ -dumpmachine)
 
@@ -14,27 +15,31 @@ CCFLAGS := -std=c++11 -g3
 LDFLAGS := 
 SRC := $(wildcard *.c)
 CPPSRC := $(wildcard ../src/*.cpp)
-OBJ := $(addprefix obj/$(ARCH)/,$(notdir $(SRC:.c=.o)))
-CPPOBJ := $(addprefix obj/$(ARCH)/,$(notdir $(CPPSRC:.cpp=.o)))
+OBJ := $(addprefix obj/$(ARCH)/c/,$(notdir $(SRC:.c=.o)))
+CPPOBJ := $(addprefix obj/$(ARCH)/cpp/,$(notdir $(CPPSRC:.cpp=.o)))
 LIBS := -L../../lib/$(ARCH)/ -lnymphcast -lnymphrpc -lPocoNet -lPocoNetSSL \
 							 -lPocoUtil -lPocoFoundation
+							 
+$(info $$SRC is [${SRC}])
 
 all: makedir bin/$(ARCH)/$(TARGET)
 
 makedir:
-	$(MKDIR) obj/$(ARCH)
+	$(MKDIR) obj/$(ARCH)/cpp
+	$(MKDIR) obj/$(ARCH)/c
 	$(MKDIR) bin/$(ARCH)
 	
-# obj/$(ARCH)/%.o: %.cpp
-	# $(GPP) -c -o $@ $< $(CCFLAGS)
-	
-obj/$(ARCH)/%.o: $(CPPSRC)
+obj/$(ARCH)/cpp/%.o: $(CPPSRC)
 	$(GPP) -c -o $@ $< $(CCFLAGS)
 	
-obj/$(ARCH)/%.o: %.c
+obj/$(ARCH)/c/%.o: $(SRC)
 	$(GCC) -c -o $@ $< $(CFLAGS)
 	
 bin/$(ARCH)/$(TARGET): $(OBJ) $(CPPOBJ)
 	$(GPP) -o $@ $(OBJ) $(CPPOBJ) $(LDFLAGS) $(LIBS)
+	
+clean:
+	$(RM) $(OBJ)
+	$(RM) $(CPPOBJ)
 	
 .PHONY: obj bin makedir

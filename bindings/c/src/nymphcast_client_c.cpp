@@ -25,12 +25,12 @@ char* NC_sendApplicationMessage(uint32_t handle, char* appId, char* message, uin
 								char* response, uint32_t* length);
 bool NC_loadResource(uint32_t handle, char* appId, char* name, char* response, uint32_t* length);
 
-bool NC_findServers(NC_NymphCastRemote* servers, uint32_t* count);
-bool NC_findShares(NC_NymphCastRemote* servers, uint32_t* count);
+bool NC_findServers(NC_NymphCastRemote** servers, uint32_t* count);
+bool NC_findShares(NC_NymphCastRemote** servers, uint32_t* count);
 bool NC_connectServer(char* ip, uint32_t port, uint32_t* handle);
 bool NC_disconnectServer(uint32_t handle);
 
-bool NC_getShares(NC_NymphCastRemote mediaserver, NC_NymphMediaFile* files, uint32_t* count);
+bool NC_getShares(NC_NymphCastRemote mediaserver, NC_NymphMediaFile** files, uint32_t* count);
 bool NC_playShare(NC_NymphMediaFile file, NC_NymphCastRemote* receivers, uint32_t count);
 
 bool NC_addSlaves(uint32_t handle, NC_NymphCastRemote* remotes, uint32_t count);
@@ -176,7 +176,7 @@ bool NC_loadResource(uint32_t handle, char* appId, char* name, char* response, u
 
 
 // --- FIND SERVERS ---
-bool NC_findServers(NC_NymphCastRemote* servers, uint32_t* count) {
+bool NC_findServers(NC_NymphCastRemote** servers, uint32_t* count) {
 	std::vector<NymphCastRemote> response;
 	response = client.findServers();
 	if (response.size() == 0) {
@@ -187,19 +187,19 @@ bool NC_findServers(NC_NymphCastRemote* servers, uint32_t* count) {
 	
 	// Allocate heap space for the new array.
 	*count = (uint32_t) response.size();
-	servers = (NC_NymphCastRemote*) calloc(response.size(), sizeof(NC_NymphCastRemote));
+	*servers = (NC_NymphCastRemote*) calloc(response.size(), sizeof(NC_NymphCastRemote));
 	for (uint32_t i = 0; i < *count; i++) {
 		// Copy data between the vector and array.
-		servers[i].name = (char*) malloc(response[i].name.size() + 1);
-		memcpy(servers[i].name, response[i].name.c_str(), response[i].name.size() + 1);
+		(*servers)[i].name = (char*) malloc(response[i].name.size() + 1);
+		memcpy((*servers)[i].name, response[i].name.c_str(), response[i].name.size() + 1);
 		
-		servers[i].ipv4 = (char*) malloc(response[i].ipv4.size() + 1);
-		memcpy(servers[i].ipv4, response[i].ipv4.c_str(), response[i].ipv4.size() + 1);
+		(*servers)[i].ipv4 = (char*) malloc(response[i].ipv4.size() + 1);
+		memcpy((*servers)[i].ipv4, response[i].ipv4.c_str(), response[i].ipv4.size() + 1);
 		
-		servers[i].ipv6 = (char*) malloc(response[i].ipv6.size() + 1);
-		memcpy(servers[i].ipv6, response[i].ipv6.c_str(), response[i].ipv6.size() + 1);
+		(*servers)[i].ipv6 = (char*) malloc(response[i].ipv6.size() + 1);
+		memcpy((*servers)[i].ipv6, response[i].ipv6.c_str(), response[i].ipv6.size() + 1);
 		
-		servers[i].port = response[i].port;
+		(*servers)[i].port = response[i].port;
 	}
 	
 	return true;
@@ -207,7 +207,7 @@ bool NC_findServers(NC_NymphCastRemote* servers, uint32_t* count) {
 
 
 // --- FIND SHARES ---
-bool NC_findShares(NC_NymphCastRemote* servers, uint32_t* count) {
+bool NC_findShares(NC_NymphCastRemote** servers, uint32_t* count) {
 	std::vector<NymphCastRemote> response;
 	response = client.findShares();
 	if (response.size() == 0) {
@@ -218,19 +218,19 @@ bool NC_findShares(NC_NymphCastRemote* servers, uint32_t* count) {
 	
 	// Allocate heap space for the new array.
 	*count = response.size();
-	servers = (NC_NymphCastRemote*) calloc(response.size(), sizeof(NC_NymphCastRemote));
+	*servers = (NC_NymphCastRemote*) calloc(response.size(), sizeof(NC_NymphCastRemote));
 	for (uint32_t i = 0; i < *count; i++) {
 		// Copy data between the vector and array.
-		servers[i].name = (char*) malloc(response[i].name.size() + 1);
-		memcpy(servers[i].name, response[i].name.c_str(), response[i].name.size() + 1);
+		(*servers)[i].name = (char*) malloc(response[i].name.size() + 1);
+		memcpy((*servers)[i].name, response[i].name.c_str(), response[i].name.size() + 1);
 		
-		servers[i].ipv4 = (char*) malloc(response[i].ipv4.size() + 1);
-		memcpy(servers[i].ipv4, response[i].ipv4.c_str(), response[i].ipv4.size() + 1);
+		(*servers)[i].ipv4 = (char*) malloc(response[i].ipv4.size() + 1);
+		memcpy((*servers)[i].ipv4, response[i].ipv4.c_str(), response[i].ipv4.size() + 1);
 		
-		servers[i].ipv6 = (char*) malloc(response[i].ipv6.size() + 1);
-		memcpy(servers[i].ipv6, response[i].ipv6.c_str(), response[i].ipv6.size() + 1);
+		(*servers)[i].ipv6 = (char*) malloc(response[i].ipv6.size() + 1);
+		memcpy((*servers)[i].ipv6, response[i].ipv6.c_str(), response[i].ipv6.size() + 1);
 		
-		servers[i].port = response[i].port;
+		(*servers)[i].port = response[i].port;
 	}
 	
 	return true;
@@ -251,7 +251,7 @@ bool NC_disconnectServer(uint32_t handle) {
 
 
 // --- GET SHARES ---
-bool NC_getShares(NC_NymphCastRemote mediaserver, NC_NymphMediaFile* files, uint32_t* count) {
+bool NC_getShares(NC_NymphCastRemote mediaserver, NC_NymphMediaFile** files, uint32_t* count) {
 	// Convert between the different data structures before and after the remote call.
 	NymphCastRemote ms;
 	ms.name = std::string(mediaserver.name);
@@ -268,32 +268,32 @@ bool NC_getShares(NC_NymphCastRemote mediaserver, NC_NymphMediaFile* files, uint
 	
 	// Allocate heap space for the new array.
 	*count = list.size();
-	files = (NC_NymphMediaFile*) calloc(list.size(), sizeof(NC_NymphMediaFile));
+	*files = (NC_NymphMediaFile*) calloc(list.size(), sizeof(NC_NymphMediaFile));
 	for (uint32_t i = 0; i < *count; i++) {
 		// Copy data between the vector and array.
-		files[i].mediaserver.name = (char*) malloc(list[i].mediaserver.name.size() + 1);
-		memcpy(files[i].mediaserver.name, list[i].mediaserver.name.c_str(), 
+		(*files)[i].mediaserver.name = (char*) malloc(list[i].mediaserver.name.size() + 1);
+		memcpy((*files)[i].mediaserver.name, list[i].mediaserver.name.c_str(), 
 										list[i].mediaserver.name.size() + 1);
 		
-		files[i].mediaserver.ipv4 = (char*) malloc(list[i].mediaserver.ipv4.size() + 1);
-		memcpy(files[i].mediaserver.ipv4, list[i].mediaserver.ipv4.c_str(), 
+		(*files)[i].mediaserver.ipv4 = (char*) malloc(list[i].mediaserver.ipv4.size() + 1);
+		memcpy((*files)[i].mediaserver.ipv4, list[i].mediaserver.ipv4.c_str(), 
 										list[i].mediaserver.ipv4.size() + 1);
 		
-		files[i].mediaserver.ipv6 = (char*) malloc(list[i].mediaserver.ipv6.size() + 1);
-		memcpy(files[i].mediaserver.ipv6, list[i].mediaserver.ipv6.c_str(), 
+		(*files)[i].mediaserver.ipv6 = (char*) malloc(list[i].mediaserver.ipv6.size() + 1);
+		memcpy((*files)[i].mediaserver.ipv6, list[i].mediaserver.ipv6.c_str(), 
 										list[i].mediaserver.ipv6.size() + 1);
 										
-		files[i].mediaserver.port = list[i].mediaserver.port;
+		(*files)[i].mediaserver.port = list[i].mediaserver.port;
 		
-		files[i].id = list[i].id;
+		(*files)[i].id = list[i].id;
 		
-		files[i].name = (char*) malloc(list[i].name.size() + 1);
-		memcpy(files[i].name, list[i].name.c_str(), list[i].name.size() + 1);
+		(*files)[i].name = (char*) malloc(list[i].name.size() + 1);
+		memcpy((*files)[i].name, list[i].name.c_str(), list[i].name.size() + 1);
 		
-		files[i].section = (char*) malloc(list[i].section.size() + 1);
-		memcpy(files[i].section, list[i].section.c_str(), list[i].section.size() + 1);
+		(*files)[i].section = (char*) malloc(list[i].section.size() + 1);
+		memcpy((*files)[i].section, list[i].section.c_str(), list[i].section.size() + 1);
 		
-		files[i].type = list[i].type;
+		(*files)[i].type = list[i].type;
 	}
 	
 	return true;
