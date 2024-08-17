@@ -42,7 +42,11 @@ void NymphCastClient::MediaReadCallback(uint32_t session, NymphMessage* msg, voi
 	// Call the 'session_data' remote function after reading N bytes from the file.
 	// Check if a desired block size is set, if not: use default size.
 	uint32_t bufLenDefault = 200 * 1024;
-	uint32_t bufLen = msg->parameters()[0]->getUint32();
+	uint32_t bufLen = 0;
+	if (msg->parameters().size() > 0) {
+		bufLen = msg->parameters()[0]->getUint32();
+	}
+	
 	if (bufLen == 0) { 
 		bufLen = bufLenDefault; 
 	}
@@ -337,6 +341,7 @@ std::string NymphCastClient::getApplicationList(uint32_t handle) {
 	@param handle The handle for the remote server.
 	@param appId ID of the remote application.
 	@param message Message to send to the remote application.
+	@param format Result format. 0 is plain text, 1 HTML.
 	
 	@return String with any response from the remote.
 */
