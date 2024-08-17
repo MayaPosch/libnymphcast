@@ -93,6 +93,10 @@ LIBS := -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON
 CFLAGS := $(INCLUDE) -g3 -std=c++17 -O0
 SHARED_FLAGS := -fPIC -shared -Wl,$(SONAME),$(LIBNAME)
 
+ifeq ($(GPP),g++)
+	CFLAGS += -fext-numeric-literals
+endif
+
 ifdef ANDROID
 CFLAGS += -fPIC
 else ifdef ANDROIDX86
@@ -112,7 +116,8 @@ ifndef ANDROID
 ifndef ANDROID64
 ifndef ANDROIDX86
 ifndef ANDROIDX64
-	CFLAGS := $(CFLAGS) -U__STRICT_ANSI__ -DPOCO_WIN32_UTF8
+	# Old: -U__STRICT_ANSI__
+	CFLAGS := $(CFLAGS) -DPOCO_WIN32_UTF8
 	LIBS += -lws2_32
 endif
 endif
