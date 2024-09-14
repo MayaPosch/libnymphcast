@@ -1,0 +1,21 @@
+Libnymphcast Release notes
+
+---
+
+=========
+> v0.1
+
+- Initial version.
+
+
+=========
+> v0.2
+
+New:
+- C binding.
+- Haiku platform support.
+- Block size parameter for read and seek callbacks.
+- Use MSYS2 platform defined by the active shell (Mingw64, UCRT, etc.).
+
+Fixed:
+- Add ext-numeric-literals flag to deal with newer GCC versions.
