@@ -70,10 +70,10 @@ MAKEDIR = mkdir -p
 RM = rm
 AR = ar 
 else
-GCC = g++
-MAKEDIR = mkdir -p
-RM = rm
-AR = ar
+GCC ?= g++
+MAKEDIR ?= mkdir -p
+RM ?= rm
+AR ?= ar
 endif
 
 OUTPUT := libnymphcast
