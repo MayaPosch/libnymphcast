@@ -197,6 +197,9 @@ install:
 	install -m 644 lib/$(ARCH)$(OUTPUT).a $(DESTDIR)$(PREFIX)/lib/
 ifndef OS
 	install -m 644 lib/$(ARCH)$(OUTPUT).so.$(VERSION) $(DESTDIR)$(PREFIX)/lib
+ifdef HAIKU
+	install -m 644 lib/$(ARCH)$(OUTPUT).so.$(VERSION) /boot/system/non-packaged/lib
+endif
 endif
 ifdef HAIKU
 	install -d $(DESTDIR)$(PREFIX)/headers
