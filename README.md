@@ -34,6 +34,10 @@ After this, the project can be compiled using a C++11 capable GCC compiler and m
 
 After calling `make` in the root of the project folder, the library can be found in the `lib/` folder in a platform-specific sub-folder. Installation of the library and headers is performed with `sudo make install` or `make install` (MSYS2).
 
+**Notes**: When building on **FreeBSD** make sure to use `gmake`. To use `clang` instead of `gcc` specify the toolchain on the command to `make/gmake`:
+
+`make TOOLCHAIN=clang`
+
 ## MSVC ##
 
 For MSVC-based installation, an automated setup script using [vcpkg](https://vcpkg.io/) is provided. This supports MSVC 2017, 2019 and 2022. Execute it from an x64 native MSVC shell:
