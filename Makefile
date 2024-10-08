@@ -135,6 +135,11 @@ endif
 endif
 endif
 
+ifeq ($(USYS),FreeBSD)
+	INCLUDE += -I /usr/local/include
+	LIBS += -L /usr/local/lib
+endif
+
 SOURCES := $(wildcard src/*.cpp)
 OBJECTS := $(addprefix obj/static/$(ARCH),$(notdir) $(SOURCES:.cpp=.o))
 SHARED_OBJECTS := $(addprefix obj/shared/$(ARCH),$(notdir) $(SOURCES:.cpp=.o))
