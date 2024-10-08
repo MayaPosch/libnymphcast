@@ -99,7 +99,12 @@ endif
 
 INCLUDE := -I src
 LIBS := -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON 
-#-lstdc++fs
+
+ifeq ($(USYS),FreeBSD)
+	INCLUDE += -I /usr/local/include
+	LIBS += -L /usr/local/lib
+endif
+
 CFLAGS := $(INCLUDE) -g3 -std=c++17 -O0
 SHARED_FLAGS := -fPIC -shared -Wl,$(SONAME),$(LIBNAME)
 
@@ -133,11 +138,6 @@ endif
 endif
 endif
 endif
-endif
-
-ifeq ($(USYS),FreeBSD)
-	INCLUDE += -I /usr/local/include
-	LIBS += -L /usr/local/lib
 endif
 
 SOURCES := $(wildcard src/*.cpp)
