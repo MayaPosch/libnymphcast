@@ -767,6 +767,84 @@ bool NymphCastClient::playShare(NymphMediaFile file, std::vector<NymphCastRemote
 }
 
 
+// --- GET RECEIVER SHARES ---
+/**
+	Attempt to obtain the list of shared media files from a NymphCast Server.
+	
+	@param receiver	Handle of the target server instance.
+	
+	@return Vector with the list of available files, if successful.
+*/
+std::vector<NymphMediaFile> NymphCastClient::getReceiverShares(uint32_t handle) {
+	std::vector<NymphMediaFile> files;
+	
+	// Call RPC function to get the list of shared files on the server.
+	std::string result;
+	std::vector<NymphType*> values;
+	NymphType* returnValue = 0;
+	if (!NymphRemoteServer::callMethod(handle, "getFileList", values, returnValue, result)) {
+		std::cout << "Error calling remote method getFileList: " << result << std::endl;
+		return files;
+	}
+	
+	// Parse array and return it.
+	std::vector<NymphType*>* ncf = returnValue->getArray();
+	for (int j = 0; j < ncf->size(); ++j) {
+		NymphMediaFile file;
+		//file.mediaserver = mediaserver;
+		NymphType* value = 0;
+		if (!(*ncf)[j]->getStructValue("id", value)) { return files; }
+		file.id = value->getUint32();
+		if (!(*ncf)[j]->getStructValue("filename", value)) { return files; }
+		file.name = value->getString();
+		if (!(*ncf)[j]->getStructValue("section", value)) { return files; }
+		file.section = value->getString();
+		if (!(*ncf)[j]->getStructValue("type", value)) { return files; }
+		file.type = (NymphMediaFileType) value->getUint8();
+		
+		files.push_back(file);
+	}
+	
+	delete returnValue;
+		
+	return files;
+}
+
+
+// --- PLAY RECEIVER SHARE ---
+/**
+	Instruct a Media Server instance to play back a specific shared file on the target remote servers.
+	
+	If multiple receivers are specified, the first one becomes the Master receiver, with the remaining receivers configured as Slave receivers to that one Master receiver. This allows for synchronous playback.
+	
+	@param file			Definition of the shared 
+	@param receivers 	Vector of remote servers to play the content back on.
+	
+	@return True if the operation succeeded.
+*/
+bool NymphCastClient::playReceiverShare(uint32_t handle, NymphMediaFile file) {
+	// Encode file data.
+	NymphType* fileId = new NymphType(file.id);
+	
+	// Call RPC function to get the list of shared files on the server.
+	std::vector<NymphType*> values;
+	values.push_back(fileId);
+	std::string result;
+	NymphType* returnValue = 0;
+	if (!NymphRemoteServer::callMethod(handle, "playMedia", values, returnValue, result)) {
+		std::cout << "Error calling remote method playMedia: " << result << std::endl;
+		return false;
+	}
+	
+	// Check result.
+	uint8_t res = returnValue->getUint8();	
+	delete returnValue;	
+	if (res != 0) { return false; }
+	
+	return true;
+}
+
+
 // --- ADD SLAVES ---
 // Send a list of slave remotes which the target remote will mirror its playback status on.
 // This includes audio and video playback.

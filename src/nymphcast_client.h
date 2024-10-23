@@ -110,6 +110,9 @@ public:
 	std::vector<NymphMediaFile> getShares(NymphCastRemote mediaserver);
 	bool playShare(NymphMediaFile file, std::vector<NymphCastRemote> receivers);
 	
+	std::vector<NymphMediaFile> getReceiverShares(uint32_t handle);
+	bool playReceiverShare(uint32_t handle, NymphMediaFile file);
+	
 	bool addSlaves(uint32_t handle, std::vector<NymphCastRemote> remotes);
 	bool castFile(uint32_t handle, std::string filename);
 	bool castUrl(uint32_t handle, std::string &url);
