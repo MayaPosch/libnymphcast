@@ -173,9 +173,9 @@ LIB_FOLDER  = lib/$(LIB_ARCH)/$(LIB_CONFIG)			# e.g.: lib\x86_32-w64-msvc\Releas
 OBJ_FOLDER  = obj/static/$(LIB_ARCH)/$(LIB_CONFIG)	# e.g.: obj\static\x86_32-w64-msvc\Release
 
 LIB_INCLUDE = \
-	-I $(SRC_FOLDER) \
-	-I $(NYMPHRPC_ROOT)/include \
-	-I $(POCO_ROOT)/include
+	-I "$(SRC_FOLDER)" \
+	-I "$(NYMPHRPC_ROOT)/include" \
+	-I "$(POCO_ROOT)/include"
 
 # libraries to link to when using LibNymphCast:
 
@@ -238,6 +238,8 @@ LIB_OBJECTS_DIR = $(LIB_OBJECTS_TMP:src/=obj/static/x86_64-w64-msvc/Release/)
 #
 
 all: print-configuration lib
+
+# Quote echo text to keep alignment:
 
 print-configuration:
 	@echo.

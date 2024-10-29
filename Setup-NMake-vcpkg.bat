@@ -9,10 +9,15 @@
 ::
 
 :: Install vcpkg tool:
-:: > git clone https://github.com/microsoft/vcpkg
-:: > .\vcpkg\bootstrap-vcpkg.bat -disableMetrics
+:: > git clone https://github.com/microsoft/vcpkg /path/to/vcpkg-folder
+:: > .\vcpkg-folder\bootstrap-vcpkg.bat -disableMetrics
 :: > set VCPKG_ROOT=/path/to/vcpkg-folder
 ::
+
+:: Note: For most flexibility, "quote on use" is generally used and quotes in variable assignment avoided.
+:: For example:
+:: - `set var=val ue` // Note: no spaces around `=`
+:: - `echo "%var%"`
 
 echo.
 
@@ -46,16 +51,16 @@ if not [%VSCMD_ARG_TGT_ARCH%] == [%NC_TGT_ARCH%] (
 
 :: Check for vcpkg:
 
-set vcpkg="%VCPKG_ROOT%\vcpkg.exe"
+set vcpkg=%VCPKG_ROOT%\vcpkg.exe
 
-if ["%VCPKG_ROOT%"] == [] (
+if ["%VCPKG_ROOT%"] == [""] (
     echo [Setup LibNymphCast: Make sure environment variable 'VCPKG_ROOT' points to your vcpkg installation; it's empty or does not exist. Bailing out.]
     endlocal & goto :EOF
 )
 
 :: NymphRPC and LibNymphCast libraries:
 
-if ["%NYMPHRPC_ROOT%"] == [] (
+if ["%NYMPHRPC_ROOT%"] == [""] (
     set NYMPHRPC_ROOT=D:\Libraries\NymphRPC
 )
 
@@ -65,12 +70,12 @@ if exist "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\Poco" (
     echo Setup LibNymphCast: Poco is already installed at "%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%\include\Poco".
 ) else (
     echo [Installing vcpkg Poco; please be patient, this may take about 10 minutes...]
-    echo "%vcpkg% install --triplet %VCPKG_TRIPLET% poco"
+    echo "%vcpkg%" install --triplet %VCPKG_TRIPLET% poco
 )
 
 echo Setup LibNymphCast: Using POCO_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
 
-set POCO_ROOT="%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%"
+set POCO_ROOT=%VCPKG_ROOT%\installed\%VCPKG_TRIPLET%
 
 :: NymphRPC - Download and build NymphRPC dependency:
 
@@ -98,18 +103,18 @@ nmake -nologo -f NMakefile ^
         NC_STATIC=%NC_STATIC% ^
         NC_LNKCRT=-MD ^
         NC_CONFIG=%NC_CONFIG% ^
-        POCO_ROOT=%POCO_ROOT% ^
-    NYMPHRPC_ROOT=%NYMPHRPC_ROOT% ^
-   INSTALL_PREFIX=%INSTALL_PREFIX% ^
+        POCO_ROOT="%POCO_ROOT%" ^
+    NYMPHRPC_ROOT="%NYMPHRPC_ROOT%" ^
+   INSTALL_PREFIX="%INSTALL_PREFIX%" ^
         clean all install %*
 
 nmake -nologo -f NMakefile ^
         NC_STATIC=%NC_STATIC% ^
         NC_LNKCRT=-MT ^
         NC_CONFIG=%NC_CONFIG% ^
-        POCO_ROOT=%POCO_ROOT% ^
-    NYMPHRPC_ROOT=%NYMPHRPC_ROOT% ^
-   INSTALL_PREFIX=%INSTALL_PREFIX% ^
+        POCO_ROOT="%POCO_ROOT%" ^
+    NYMPHRPC_ROOT="%NYMPHRPC_ROOT%" ^
+   INSTALL_PREFIX="%INSTALL_PREFIX%" ^
         clean all install %*
 
 echo.
