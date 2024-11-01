@@ -202,27 +202,21 @@ PREFIX = $(MINGW_PREFIX)
 endif
 
 ifeq ($(USYS),Haiku)
-	PREFIX := /boot/system/non-packaged/develop
+	PREFIX := /boot/system/non-packaged
+	DEVFOLDER := /develop
 	HAIKU := true
 endif
 
 .PHONY: install
 install:
 	install -d $(DESTDIR)$(PREFIX)/lib
-	install -m 644 lib/$(ARCH)$(OUTPUT).a $(DESTDIR)$(PREFIX)/lib/
+	install -m 644 lib/$(ARCH)$(OUTPUT).a $(DESTDIR)$(PREFIX)$(DEVFOLDER)/lib/
 ifndef OS
 	install -m 644 lib/$(ARCH)$(OUTPUT).so.$(VERSION) $(DESTDIR)$(PREFIX)/lib
-ifdef HAIKU
-	install -m 644 lib/$(ARCH)$(OUTPUT).so.$(VERSION) /boot/system/non-packaged/lib
 endif
-endif
-ifdef HAIKU
-	install -d $(DESTDIR)$(PREFIX)/headers
-	install -m 644 src/nymphcast_client.h $(DESTDIR)$(PREFIX)/headers/
-else
-	install -d $(DESTDIR)$(PREFIX)/include
-	install -m 644 src/nymphcast_client.h $(DESTDIR)$(PREFIX)/include/
-endif
+	install -d $(DESTDIR)$(PREFIX)$(DEVFOLDER)/include
+	install -m 644 src/nymphcast_client.h $(DESTDIR)$(PREFIX)$(DEVFOLDER)/include/
+
 ifndef OS
 	cd $(DESTDIR)$(PREFIX)/lib && \
 		if [ -f $(OUTPUT).so ]; then \
