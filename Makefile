@@ -46,41 +46,41 @@ UMCH := $(shell uname -m)
 ifdef TOOLCHAIN
 include toolchain/$(TOOLCHAIN).mk
 else
-GPP = g++
-GCC = gcc
+CXX ?= g++
+CC ?= gcc
 STRIP = strip
 MAKEDIR = mkdir -p
 RM = rm
 endif
 
 ifdef ANDROID
-#GPP := $(TOOLCHAIN_PREFIX)g++$(TOOLCHAIN_POSTFIX)
-GPP := armv7a-linux-androideabi$(ANDROID_ABI_LEVEL)-clang++$(TOOLCHAIN_POSTFIX)
+#CXX := $(TOOLCHAIN_PREFIX)g++$(TOOLCHAIN_POSTFIX)
+CXX := armv7a-linux-androideabi$(ANDROID_ABI_LEVEL)-clang++$(TOOLCHAIN_POSTFIX)
 MAKEDIR = mkdir -p
 RM = rm
 AR = $(TOOLCHAIN_PREFIX)ar
 else ifdef ANDROID64
-GPP := aarch64-linux-android$(ANDROID_ABI_LEVEL)-clang++$(TOOLCHAIN_POSTFIX)
+CXX := aarch64-linux-android$(ANDROID_ABI_LEVEL)-clang++$(TOOLCHAIN_POSTFIX)
 MAKEDIR = mkdir -p
 RM = rm
 AR = $(TOOLCHAIN_PREFIX)ar
 else ifdef ANDROIDX86
-GPP := i686-linux-android$(ANDROID_ABI_LEVEL)-clang++$(TOOLCHAIN_POSTFIX)
+CXX := i686-linux-android$(ANDROID_ABI_LEVEL)-clang++$(TOOLCHAIN_POSTFIX)
 MAKEDIR = mkdir -p
 RM = rm
 AR = $(TOOLCHAIN_PREFIX)ar
 else ifdef ANDROIDX64
-GPP := x86_64-linux-android$(ANDROID_ABI_LEVEL)-clang++$(TOOLCHAIN_POSTFIX)
+CXX := x86_64-linux-android$(ANDROID_ABI_LEVEL)-clang++$(TOOLCHAIN_POSTFIX)
 MAKEDIR = mkdir -p
 RM = rm
 AR = $(TOOLCHAIN_PREFIX)ar
 else ifdef WASM
-GPP = emc++
+CXX = emc++
 MAKEDIR = mkdir -p
 RM = rm
 AR = ar 
 else
-GPP ?= g++
+CXX ?= g++
 MAKEDIR ?= mkdir -p
 RM ?= rm
 AR ?= ar
@@ -105,23 +105,23 @@ ifeq ($(USYS),FreeBSD)
 	LIBS += -L /usr/local/lib
 endif
 
-CFLAGS := $(INCLUDE) -g3 -std=c++17 -O0
+CXXFLAGS := $(INCLUDE) -g3 -std=c++17 -O0
 SHARED_FLAGS := -fPIC -shared -Wl,$(SONAME),$(LIBNAME)
 
-ifeq ($(GPP),g++)
-	CFLAGS += -fext-numeric-literals
+ifeq ($(CXX),g++)
+	CXXFLAGS += -fext-numeric-literals
 endif
 
 ifdef ANDROID
-CFLAGS += -fPIC
+CXXFLAGS += -fPIC
 else ifdef ANDROIDX86
-CFLAGS += -fPIC
+CXXFLAGS += -fPIC
 else ifdef ANDROIDX64
-CFLAGS += -fPIC
+CXXFLAGS += -fPIC
 endif
 
 ifdef ANDROID64
-CFLAGS += -fPIC -fno-strict-aliasing
+CXXFLAGS += -fPIC -fno-strict-aliasing
 endif
 
 # Check for MinGW and patch up POCO
@@ -132,7 +132,7 @@ ifndef ANDROID64
 ifndef ANDROIDX86
 ifndef ANDROIDX64
 	# Old: -U__STRICT_ANSI__
-	CFLAGS := $(CFLAGS) -DPOCO_WIN32_UTF8
+	CXXFLAGS := $(CXXFLAGS) -DPOCO_WIN32_UTF8
 	LIBS += -lws2_32
 endif
 endif
@@ -149,17 +149,17 @@ all: lib
 lib: makedir lib/$(ARCH)$(OUTPUT).a lib/$(ARCH)$(LIBNAME)
 	
 obj/static/$(ARCH)%.o: %.cpp
-	$(GPP) -c -o $@ $< $(CFLAGS)
+	$(CXX) -c -o $@ $< $(CXXFLAGS)
 	
 obj/shared/$(ARCH)%.o: %.cpp
-	$(GPP) -c -o $@ $< $(CFLAGS) $(SHARED_FLAGS) $(LIBS)
+	$(CXX) -c -o $@ $< $(CXXFLAGS) $(SHARED_FLAGS) $(LIBS)
 	
 lib/$(ARCH)$(OUTPUT).a: $(OBJECTS)
 	-rm -f $@
 	$(AR) rcs $@ $^
 	
 lib/$(ARCH)$(LIBNAME): $(SHARED_OBJECTS)
-	$(GPP) -o $@ $(CFLAGS) $(SHARED_FLAGS) $(SHARED_OBJECTS) $(LIBS)
+	$(CXX) -o $@ $(CXXFLAGS) $(SHARED_FLAGS) $(SHARED_OBJECTS) $(LIBS)
 	
 makedir:
 	$(MAKEDIR) lib
