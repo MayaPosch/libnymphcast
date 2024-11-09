@@ -34,9 +34,13 @@ After this, the project can be compiled using a C++11 capable GCC compiler and m
 
 After calling `make` in the root of the project folder, the library can be found in the `lib/` folder in a platform-specific sub-folder. Installation of the library and headers is performed with `sudo make install` or `make install` (MSYS2).
 
-**Notes**: When building on **FreeBSD** make sure to use `gmake`. To use `clang` instead of `gcc` specify the toolchain on the command to `make/gmake`:
+**Note 1**: When building on **FreeBSD** make sure to use `gmake`. 
+
+**Note 2**: To use `clang` instead of `gcc` specify the toolchain on the command to `make/gmake`:
 
 `make TOOLCHAIN=clang`
+
+**Note 3**: The `CXX` environment variable is used by default. The fallback is `g++`.
 
 ## MSVC ##
 

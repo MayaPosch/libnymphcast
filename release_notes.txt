@@ -2,13 +2,17 @@ Libnymphcast Release notes
 
 ---
 
-=========
-> v0.1
+> v0.2.1
 
-- Initial version.
+New:
+- Added receiver shares support.
+
+Bugs:
+- Fixed installation for Haiku.
+- Fixed compilation for FreeBSD.
+- Added double quotes for MSVC scripts to handle spaces in paths.
 
 
-=========
 > v0.2
 
 New:
@@ -17,5 +21,10 @@ New:
 - Block size parameter for read and seek callbacks.
 - Use MSYS2 platform defined by the active shell (Mingw64, UCRT, etc.).
 
-Fixed:
+Bugs:
 - Add ext-numeric-literals flag to deal with newer GCC versions.
+
+
+> v0.1
+
+- Initial version.
