@@ -69,6 +69,7 @@ struct NymphMediaFile {
 	uint32_t id;
 	std::string name;
 	std::string section;
+	std::string rel_path;
 	NymphMediaFileType type;
 };
 
@@ -108,7 +109,7 @@ public:
 	bool disconnectServer(uint32_t handle);
 	
 	std::vector<NymphMediaFile> getShares(NymphCastRemote mediaserver);
-	bool playShare(NymphMediaFile file, std::vector<NymphCastRemote> receivers);
+	uint8_t playShare(NymphMediaFile file, std::vector<NymphCastRemote> receivers);
 	
 	std::vector<NymphMediaFile> getReceiverShares(uint32_t handle);
 	bool playReceiverShare(uint32_t handle, NymphMediaFile file);

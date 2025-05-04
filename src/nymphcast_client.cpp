@@ -672,7 +672,7 @@ std::vector<NymphMediaFile> NymphCastClient::getShares(NymphCastRemote mediaserv
 	// Disconnect from remote mediaserver.
 	NymphRemoteServer::disconnect(mshandle, result);
 	
-	// Parse array and return it.
+	// Parse array and return it. If parse error, return the list up till that point.
 	std::vector<NymphType*>* ncf = returnValue->getArray();
 	for (int j = 0; j < ncf->size(); ++j) {
 		NymphMediaFile file;
@@ -684,6 +684,8 @@ std::vector<NymphMediaFile> NymphCastClient::getShares(NymphCastRemote mediaserv
 		file.name = value->getString();
 		if (!(*ncf)[j]->getStructValue("section", value)) { return files; }
 		file.section = value->getString();
+		if (!(*ncf)[j]->getStructValue("rel_path", value)) { return files; }
+		file.rel_path = value->getString();
 		if (!(*ncf)[j]->getStructValue("type", value)) { return files; }
 		file.type = (NymphMediaFileType) value->getUint8();
 		
@@ -705,17 +707,18 @@ std::vector<NymphMediaFile> NymphCastClient::getShares(NymphCastRemote mediaserv
 	@param file			Definition of the shared 
 	@param receivers 	Vector of remote servers to play the content back on.
 	
-	@return True if the operation succeeded.
+	@return 0 if the operation succeeded, 1 if local share list outdated, 2 if failure.
 */
-bool NymphCastClient::playShare(NymphMediaFile file, std::vector<NymphCastRemote> receivers) {
-	if (receivers.empty()) { return false; }
+uint8_t NymphCastClient::playShare(NymphMediaFile file, std::vector<NymphCastRemote> receivers) {
+	uint8_t res = 2;
+	if (receivers.empty()) { return res; }
 	
 	// Establish new connection to mediaserver.
 	uint32_t mshandle;
 	std::string result;
 	if (!NymphRemoteServer::connect(file.mediaserver.ipv4, file.mediaserver.port, mshandle, 0, result)) {
 		std::cout << "Connecting to remote server failed: " << result << std::endl;
-		return false;
+		return res;
 	}
 	
 	// Encode receivers.
@@ -744,26 +747,27 @@ bool NymphCastClient::playShare(NymphMediaFile file, std::vector<NymphCastRemote
 	
 	// Encode file data.
 	NymphType* fileId = new NymphType(file.id);
+	NymphType* filename = new NymphType(&file.name);
 	
 	// Call RPC function to get the list of shared files on the server.
 	std::vector<NymphType*> values;
 	values.push_back(fileId);
+	values.push_back(filename);
 	values.push_back(new NymphType(recArr, true));
 	NymphType* returnValue = 0;
 	if (!NymphRemoteServer::callMethod(mshandle, "playMedia", values, returnValue, result)) {
 		std::cout << "Error calling remote method playMedia: " << result << std::endl;
-		return false;
+		return res;
 	}
 	
 	// Disconnect from remote mediaserver.
 	NymphRemoteServer::disconnect(mshandle, result);
 	
 	// Check result.
-	uint8_t res = returnValue->getUint8();	
-	delete returnValue;	
-	if (res != 0) { return false; }
+	res = returnValue->getUint8();	
+	delete returnValue;
 	
-	return true;
+	return res;
 }
 
 
