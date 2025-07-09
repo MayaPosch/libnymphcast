@@ -82,6 +82,8 @@ class NymphCastClient {
 	std::string clientId = "NymphClient_21xb";
 	std::ifstream source;
 	
+	bool datacallbacks_set;
+	
 	AppMessageFunction appMessageFunction;
 	StatusUpdateFunction statusUpdateFunction;
 	
@@ -96,6 +98,7 @@ public:
 	~NymphCastClient();
 	
 	void setClientId(std::string id);
+	void setMediaCallbacks(NymphCallbackMethod readcb, NymphCallbackMethod seekcb);
 	void setApplicationCallback(AppMessageFunction function);
 	void setStatusUpdateCallback(StatusUpdateFunction function);
 	std::string getApplicationList(uint32_t handle);

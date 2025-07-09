@@ -265,6 +265,7 @@ NymphCastClient::NymphCastClient() {
 	
 	appMessageFunction = 0;
 	statusUpdateFunction = 0;
+	datacallbacks_set = false;
 }
 
 
@@ -282,6 +283,17 @@ NymphCastClient::~NymphCastClient() {
 */
 void NymphCastClient::setClientId(std::string id) {
 	clientId = id;
+}
+
+
+// --- SET MEDIA CALLBACKS ---
+// Sets all media file related callbacks. This can only be done before connecting to a server.
+void NymphCastClient::setMediaCallbacks(NymphCallbackMethod readcb, NymphCallbackMethod seekcb) {
+	if (!datacallbacks_set) {
+		NymphRemoteServer::registerCallback("MediaReadCallback", readcb, 0);
+		NymphRemoteServer::registerCallback("MediaSeekCallback", seekcb, 0);
+		datacallbacks_set = true;
+	}
 }
 
 
@@ -564,15 +576,19 @@ bool NymphCastClient::connectServer(std::string ip, uint32_t port, uint32_t &han
 		
 	// Register callback and send message with its ID to the server. Then wait
 	// for the callback to be called.
-	using namespace std::placeholders; 
-	NymphRemoteServer::registerCallback("MediaReadCallback", 
+	using namespace std::placeholders;
+	if (!datacallbacks_set) {
+		NymphRemoteServer::registerCallback("MediaReadCallback", 
 										std::bind(&NymphCastClient::MediaReadCallback,
 																	this, _1, _2, _3), 0);
+		NymphRemoteServer::registerCallback("MediaSeekCallback", 
+										std::bind(&NymphCastClient::MediaSeekCallback,
+																	this, _1, _2, _3), 0);
+		datacallbacks_set = true;
+	}
+	
 	NymphRemoteServer::registerCallback("MediaStopCallback", 
 										std::bind(&NymphCastClient::MediaStopCallback,
-																	this, _1, _2, _3), 0);
-	NymphRemoteServer::registerCallback("MediaSeekCallback", 
-										std::bind(&NymphCastClient::MediaSeekCallback,
 																	this, _1, _2, _3), 0);
 	NymphRemoteServer::registerCallback("MediaStatusCallback", 
 										std::bind(&NymphCastClient::MediaStatusCallback,
