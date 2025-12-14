@@ -101,6 +101,9 @@ void statusUpdateCallback(uint32_t handle, NymphPlaybackStatus status) {
 bool init_nymphCastClient() {
 	// Nothing to do, client was initialised in global scope.
 	
+	// FIXME: Added to workaround Poco issue on Windows. Also see auto lib init disable in Makefile.
+	Poco::Net::initializeNetwork();
+	
 	return true;
 }
 
