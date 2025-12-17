@@ -82,6 +82,8 @@ class NymphCastClient {
 	std::string clientId = "NymphClient_21xb";
 	std::ifstream source;
 	
+	NymphLogLevels logLevel = NYMPH_LOG_LEVEL_INFO;
+	
 	bool datacallbacks_set;
 	
 	AppMessageFunction appMessageFunction;
@@ -98,6 +100,7 @@ public:
 	~NymphCastClient();
 	
 	void setClientId(std::string id);
+	void setLogLevel(NymphLogLevels level);
 	void setMediaCallbacks(NymphCallbackMethod readcb, NymphCallbackMethod seekcb);
 	void setApplicationCallback(AppMessageFunction function);
 	void setStatusUpdateCallback(StatusUpdateFunction function);

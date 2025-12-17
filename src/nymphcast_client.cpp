@@ -26,6 +26,8 @@ namespace fs = std::filesystem;
 
 #include "nyansd.h"
 
+std::string loggerName = "NymphCastClient";
+
 
 void logFunction(int level, std::string logStr) {
 	std::cout << level << " - " << logStr << std::endl;
@@ -37,7 +39,8 @@ void logFunction(int level, std::string logStr) {
 // useful for one-off events, but can also be used for callbacks during the 
 // life-time of the client.
 void NymphCastClient::MediaReadCallback(uint32_t session, NymphMessage* msg, void* data) {
-	std::cout << "Media Read callback function called.\n";
+	//std::cout << "Media Read callback function called.\n";
+	NYMPH_LOG_DEBUG("Media Read callback function called.\n");
 	
 	// Call the 'session_data' remote function after reading N bytes from the file.
 	// Check if a desired block size is set, if not: use default size.
@@ -67,7 +70,8 @@ void NymphCastClient::MediaReadCallback(uint32_t session, NymphMessage* msg, voi
 	msg->discard();
 	
 	// Debug
-	std::cout << "Read block with size " << count << " bytes." << std::endl;
+	//std::cout << "Read block with size " << count << " bytes." << std::endl;
+	NYMPH_LOG_DEBUG("Read block with size " + std::to_string(count) + " bytes.");
 	
 	std::vector<NymphType*> values;
 	values.push_back(new NymphType(buffer, count, true));
@@ -75,7 +79,8 @@ void NymphCastClient::MediaReadCallback(uint32_t session, NymphMessage* msg, voi
 	NymphType* returnValue = 0;
 	std::string result;
 	if (!NymphRemoteServer::callMethod(session, "session_data", values, returnValue, result)) {
-		std::cout << "Error calling remote method: " << result << std::endl;
+		//std::cout << "Error calling remote method: " << result << std::endl;
+		NYMPH_LOG_ERROR("Error calling remote method: " + result);
 		NymphRemoteServer::disconnect(session, result);
 		return;
 	}
@@ -85,20 +90,24 @@ void NymphCastClient::MediaReadCallback(uint32_t session, NymphMessage* msg, voi
 
 
 void NymphCastClient::MediaStopCallback(uint32_t session, NymphMessage* msg, void* data) {
-	std::cout << "Media Stop callback function called.\n";
+	//std::cout << "Media Stop callback function called.\n";
+	NYMPH_LOG_DEBUG("Media Stop callback function called.");
 		
 	// TODO: signal the application that playback was ended.
 }
 
 
 void NymphCastClient::MediaSeekCallback(uint32_t session, NymphMessage* msg, void* data) {
-	std::cout << "Media Seek callback called." << std::endl;
+	//std::cout << "Media Seek callback called." << std::endl;
+	NYMPH_LOG_DEBUG("Media Seek callback called.");
 	
 	// Seek to the indicated position in the file.
 	uint64_t position = msg->parameters()[0]->getUint64();
-	std::cout << "Seeking to position: " << position << std::endl;
+	//std::cout << "Seeking to position: " << position << std::endl;
+	NYMPH_LOG_DEBUG("Seeking to position: " + std::to_string(position));
 	if (source.eof()) {
-		std::cout << "Clearing EOF flag..." << std::endl;
+		//std::cout << "Clearing EOF flag..." << std::endl;
+		NYMPH_LOG_DEBUG("Clearing EOF flag...");
 		source.clear();
 	}
 	
@@ -114,7 +123,8 @@ void NymphCastClient::MediaSeekCallback(uint32_t session, NymphMessage* msg, voi
 	}
 	
 	// Seek from the beginning of the file.
-	std::cout << "Seeking from file beginning..." << std::endl;
+	//std::cout << "Seeking from file beginning..." << std::endl;
+	NYMPH_LOG_DEBUG("Seeking from file beginning...");
 	source.seekg(0);
 	source.seekg((std::streampos) position);
 	
@@ -137,6 +147,7 @@ void NymphCastClient::MediaSeekCallback(uint32_t session, NymphMessage* msg, voi
 	
 	// Debug
 	std::cout << "Read block with size " << count << " bytes." << std::endl;
+	NYMPH_LOG_DEBUG("Read block with size " + std::to_string(count) + " bytes.");
 	
 	std::vector<NymphType*> values;
 	values.push_back(new NymphType(buffer, count, true));
@@ -144,7 +155,8 @@ void NymphCastClient::MediaSeekCallback(uint32_t session, NymphMessage* msg, voi
 	NymphType* returnValue = 0;
 	std::string result;
 	if (!NymphRemoteServer::callMethod(session, "session_data", values, returnValue, result)) {
-		std::cout << "Error calling remote method: " << result << std::endl;
+		//std::cout << "Error calling remote method: " << result << std::endl;
+		NYMPH_LOG_ERROR("Error calling remote method: " + result);
 		NymphRemoteServer::disconnect(session, result);
 		return;
 	}
@@ -163,7 +175,8 @@ void NymphCastClient::MediaStatusCallback(uint32_t session, NymphMessage* msg, v
 	NymphType* nstruct = msg->parameters()[0];
 	NymphType* splay;
 	if (!nstruct->getStructValue("playing", splay)) {
-		std::cerr << "MediaStatusCallback: Failed to find value 'playing' in struct." << std::endl;
+		//std::cerr << "MediaStatusCallback: Failed to find value 'playing' in struct." << std::endl;
+		NYMPH_LOG_ERROR("MediaStatusCallback: Failed to find value 'playing' in struct.");
 		msg->discard();
 		return;
 	}
@@ -179,49 +192,57 @@ void NymphCastClient::MediaStatusCallback(uint32_t session, NymphMessage* msg, v
 	NymphType* stopped;
 	NymphType* subdis;
 	if (!nstruct->getStructValue("status", status)) {
-		std::cerr << "MediaStatusCallback: Failed to find value 'status' in struct." << std::endl;
+		//std::cerr << "MediaStatusCallback: Failed to find value 'status' in struct." << std::endl;
+		NYMPH_LOG_ERROR("MediaStatusCallback: Failed to find value 'status' in struct.");
 		msg->discard();
 		return;
 	}
 	
 	if (!nstruct->getStructValue("duration", duration)) {
-		std::cerr << "MediaStatusCallback: Failed to find value 'duration' in struct." << std::endl;
+		//std::cerr << "MediaStatusCallback: Failed to find value 'duration' in struct." << std::endl;
+		NYMPH_LOG_ERROR("MediaStatusCallback: Failed to find value 'duration' in struct.");
 		msg->discard();
 		return;
 	}
 	
 	if (!nstruct->getStructValue("position", position)) {
-		std::cerr << "MediaStatusCallback: Failed to find value 'position' in struct." << std::endl;
+		//std::cerr << "MediaStatusCallback: Failed to find value 'position' in struct." << std::endl;
+		NYMPH_LOG_ERROR("MediaStatusCallback: Failed to find value 'position' in struct.");
 		msg->discard();
 		return;
 	}
 	
 	if (!nstruct->getStructValue("volume", volume)) {
-		std::cerr << "MediaStatusCallback: Failed to find value 'volume' in struct." << std::endl;
+		//std::cerr << "MediaStatusCallback: Failed to find value 'volume' in struct." << std::endl;
+		NYMPH_LOG_ERROR("MediaStatusCallback: Failed to find value 'volume' in struct.");
 		msg->discard();
 		return;
 	}
 	
 	if (!nstruct->getStructValue("artist", artist)) {
-		std::cerr << "MediaStatusCallback: Failed to find value 'artist' in struct." << std::endl;
+		//std::cerr << "MediaStatusCallback: Failed to find value 'artist' in struct." << std::endl;
+		NYMPH_LOG_ERROR("MediaStatusCallback: Failed to find value 'artist' in struct.");
 		msg->discard();
 		return;
 	}
 	
 	if (!nstruct->getStructValue("title", title)) {
-		std::cerr << "MediaStatusCallback: Failed to find value 'title' in struct." << std::endl;
+		//std::cerr << "MediaStatusCallback: Failed to find value 'title' in struct." << std::endl;
+		NYMPH_LOG_ERROR("MediaStatusCallback: Failed to find value 'title' in struct.");
 		msg->discard();
 		return;
 	}
 	
 	if (!nstruct->getStructValue("stopped", stopped)) {
-		std::cerr << "MediaStatusCallback: Failed to find value 'stopped' in struct." << std::endl;
+		//std::cerr << "MediaStatusCallback: Failed to find value 'stopped' in struct." << std::endl;
+		NYMPH_LOG_ERROR("MediaStatusCallback: Failed to find value 'stopped' in struct.");
 		msg->discard();
 		return;
 	}
 	
 	if (!nstruct->getStructValue("subtitle_disable", subdis)) {
-		std::cerr << "MediaStatusCallback: Failed to find value 'subtitle_disable' in struct." << std::endl;
+		//std::cerr << "MediaStatusCallback: Failed to find value 'subtitle_disable' in struct." << std::endl;
+		NYMPH_LOG_ERROR("MediaStatusCallback: Failed to find value 'subtitle_disable' in struct.");
 		return;
 	}
 	
@@ -291,6 +312,13 @@ void NymphCastClient::setClientId(std::string id) {
 }
 
 
+// --- SET LOG LEVEL ---
+void NymphCastClient::setLogLevel(NymphLogLevels level) {
+	logLevel = level;
+	NymphRemoteServer::setLogger(logFunction, logLevel);
+}
+
+
 // --- SET MEDIA CALLBACKS ---
 // Sets all media file related callbacks. This can only be done before connecting to a server.
 void NymphCastClient::setMediaCallbacks(NymphCallbackMethod readcb, NymphCallbackMethod seekcb) {
@@ -339,7 +367,8 @@ std::string NymphCastClient::getApplicationList(uint32_t handle) {
 	NymphType* returnValue = 0;
 	std::string result;
 	if (!NymphRemoteServer::callMethod(handle, "app_list", values, returnValue, result)) {
-		std::cout << "Error calling remote method: " << result << std::endl;
+		//std::cout << "Error calling remote method: " << result << std::endl;
+		NYMPH_LOG_ERROR("Error calling remote method: " + result);
 		return std::string();
 	}
 	
@@ -372,7 +401,8 @@ std::string NymphCastClient::sendApplicationMessage(uint32_t handle, std::string
 	NymphType* returnValue = 0;
 	std::string result;
 	if (!NymphRemoteServer::callMethod(handle, "app_send", values, returnValue, result)) {
-		std::cout << "Error calling remote method: " << result << std::endl;
+		//std::cout << "Error calling remote method: " << result << std::endl;
+		NYMPH_LOG_ERROR("Error calling remote method: " + result);
 		return std::string();
 	}
 	
@@ -403,7 +433,8 @@ std::string NymphCastClient::loadResource(uint32_t handle, std::string &appId, s
 	NymphType* returnValue = 0;
 	std::string result;
 	if (!NymphRemoteServer::callMethod(handle, "app_loadResource", values, returnValue, result)) {
-		std::cout << "Error calling remote method: " << result << std::endl;
+		//std::cout << "Error calling remote method: " << result << std::endl;
+		NYMPH_LOG_ERROR("Error calling remote method: " + result);
 		return std::string();
 	}
 	
@@ -447,14 +478,17 @@ void removeLoopback(std::vector<NYSD_service> &responses) {
 	for (uint32_t i = 0; i < responses.size(); ++i) {
 		// If the response is an IPv4 loopback (127.0.0.1, 0x7F000001), and we find a duplicate
 		// record with different IP, skip it.
-		std::cout << "IPv4: " << std::hex << responses[i].ipv4 << std::endl;
+		//std::cout << "IPv4: " << std::hex << responses[i].ipv4 << std::endl;
+		NYMPH_LOG_DEBUG("IPv4: " + responses[i].ipv4);
 		if (responses[i].ipv4 == 0x100007f) {
-			std::cout << "Detected localhost response." << std::endl;
+			//std::cout << "Detected localhost response." << std::endl;
+			NYMPH_LOG_DEBUG("Detected localhost response.");
 			bool skip = false;
 			for (uint32_t j = 0; j < responses.size(); ++j) {
 				if (j != i && responses[i].hostname == responses[j].hostname) {
 					// Skip this entry.
-					std::cout << "Skipping " << responses[i].hostname << std::endl;
+					//std::cout << "Skipping " << responses[i].hostname << std::endl;
+					NYMPH_LOG_DEBUG("Skipping " + responses[i].hostname);
 					skip = true;
 					break;
 				}
@@ -509,7 +543,8 @@ std::vector<NymphCastRemote> NymphCastClient::findServers() {
 		// Check for duplicates.
 		// Prefer non-loopback addresses over a loopback address.
 		if (isDuplicate(remotes, rm) || isDuplicateName(remotes, rm)) {
-			std::cout << "Skipping duplicate for " << rm.name << std::endl;
+			//std::cout << "Skipping duplicate for " << rm.name << std::endl;
+			NYMPH_LOG_DEBUG("Skipping duplicate for " + rm.name);
 			continue;
 		}
 		
@@ -548,7 +583,8 @@ std::vector<NymphCastRemote> NymphCastClient::findShares() {
 		
 		// Check for duplicates.
 		if (isDuplicate(remotes, rm) || isDuplicateName(remotes, rm)) {
-			std::cout << "Skipping duplicate for " << rm.name << std::endl;
+			//std::cout << "Skipping duplicate for " << rm.name << std::endl;
+			NYMPH_LOG_DEBUG("Skipping duplicate for " + rm.name);
 			continue;
 		}
 		
@@ -602,7 +638,8 @@ bool NymphCastClient::connectServer(std::string ip, uint32_t port, uint32_t &han
 	// Connect to the remote server.
 	std::string result;
 	if (!NymphRemoteServer::connect(serverip, serverport, handle, 0, result)) {
-		std::cout << "Connecting to remote server failed: " << result << std::endl;
+		//std::cout << "Connecting to remote server failed: " << result << std::endl;
+		NYMPH_LOG_ERROR("Connecting to remote server failed: " + result);
 		NymphRemoteServer::disconnect(handle, result);
 		return false;
 	}
@@ -612,7 +649,8 @@ bool NymphCastClient::connectServer(std::string ip, uint32_t port, uint32_t &han
 	values.push_back(new NymphType(&clientId));
 	NymphType* returnValue = 0;
 	if (!NymphRemoteServer::callMethod(handle, "connect", values, returnValue, result)) {
-		std::cout << "Error calling remote method: " << result << std::endl;
+		//std::cout << "Error calling remote method: " << result << std::endl;
+		NYMPH_LOG_ERROR("Error calling remote method: " + result);
 		NymphRemoteServer::disconnect(handle, result);
 		return false;
 	}
@@ -649,7 +687,8 @@ bool NymphCastClient::disconnectServer(uint32_t handle) {
 	std::vector<NymphType*> values;
 	NymphType* returnValue = 0;
 	if (!NymphRemoteServer::callMethod(handle, "disconnect", values, returnValue, result)) {
-		std::cout << "Error calling remote method: " << result << std::endl;
+		//std::cout << "Error calling remote method: " << result << std::endl;
+		NYMPH_LOG_ERROR("Error calling remote method: " + result);
 		NymphRemoteServer::disconnect(handle, result);
 		return false;
 	}
@@ -678,7 +717,8 @@ std::vector<NymphMediaFile> NymphCastClient::getShares(NymphCastRemote mediaserv
 	uint32_t mshandle;
 	std::string result;
 	if (!NymphRemoteServer::connect(mediaserver.ipv4, mediaserver.port, mshandle, 0, result)) {
-		std::cout << "Connecting to remote server failed: " << result << std::endl;
+		//std::cout << "Connecting to remote server failed: " << result << std::endl;
+		NYMPH_LOG_ERROR("Connecting to remote server failed: " + result);
 		return files;
 	}
 	

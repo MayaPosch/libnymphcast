@@ -79,6 +79,18 @@ typedef struct NC_NymphMediaFile {
 } NC_NymphMediaFile;
 
 
+typedef enum {
+	NC_LOG_LEVEL_FATAL = 1,
+	NC_LOG_LEVEL_CRITICAL,
+	NC_LOG_LEVEL_ERROR,
+	NC_LOG_LEVEL_WARNING,
+	NC_LOG_LEVEL_NOTICE,
+	NC_LOG_LEVEL_INFO,
+	NC_LOG_LEVEL_DEBUG,
+	NC_LOG_LEVEL_TRACE
+} NC_NymphLogLevels;
+
+
 typedef void (*NC_AppMessageFunction)(char*, char*);
 typedef void (*NC_StatusUpdateFunction)(uint32_t, NC_NymphPlaybackStatus);
 
@@ -87,6 +99,7 @@ bool init_nymphCastClient();
 bool delete_nymphCastClient();
 
 void NC_setClientId(char* id, uint32_t len);
+void NC_setLogLevel(NC_NymphLogLevels level);
 void NC_setApplicationCallback(NC_AppMessageFunction function);
 void NC_setStatusUpdateCallback(NC_StatusUpdateFunction function);
 char* NC_getApplicationList(uint32_t handle, char* list, uint32_t* size);

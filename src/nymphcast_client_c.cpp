@@ -18,6 +18,7 @@ bool init_nymphCastClient();
 bool delete_nymphCastClient();
 
 void NC_setClientId(char* id, uint32_t len);
+void NC_setLogLevel(NC_NymphLogLevels level);
 void NC_setApplicationCallback(NC_AppMessageFunction function);
 void NC_setStatusUpdateCallback(NC_StatusUpdateFunction function);
 char* NC_getApplicationList(uint32_t handle, char* list, uint32_t* size);
@@ -121,6 +122,10 @@ bool delete_nymphCastClient() {
 void NC_setClientId(char* id, uint32_t len) {
 	std::string str = std::string((const char*) id, (size_t) len);
 	client.setClientId(str);
+}
+
+void NC_setLogLevel(NC_NymphLogLevels level) {
+	client.setLogLevel((NymphLogLevels) level);
 }
 
 
