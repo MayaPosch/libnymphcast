@@ -108,6 +108,12 @@ endif
 CXXFLAGS := $(INCLUDE) -g3 -std=c++17 -O0
 SHARED_FLAGS := -fPIC -shared -Wl,$(SONAME),$(LIBNAME)
 
+ifndef NPOCO
+# Current Poco has troubles with MinGW, so network init has to be done manually.
+CXXFLAGS += -DPOCO_NO_AUTOMATIC_LIB_INIT
+CFLAGS += -DPOCO_NO_AUTOMATIC_LIB_INIT
+endif
+
 ifeq ($(CXX),g++)
 	CXXFLAGS += -fext-numeric-literals
 endif
