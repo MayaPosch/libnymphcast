@@ -98,14 +98,16 @@ ifeq ($(shell uname -s),Darwin)
 endif
 
 INCLUDE := -I src
-LIBS := -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON 
+LIBS := -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON
+LIBS += $(LDFLAGS)
 
 ifeq ($(USYS),FreeBSD)
 	INCLUDE += -I /usr/local/include
 	LIBS += -L /usr/local/lib
 endif
 
-CXXFLAGS := $(INCLUDE) -g3 -std=c++17 -O0
+CXXFLAGS += $(INCLUDE) -g3 -std=c++17 -O0
+
 SHARED_FLAGS := -fPIC -shared -Wl,$(SONAME),$(LIBNAME)
 
 ifndef NPOCO
