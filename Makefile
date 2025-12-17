@@ -98,15 +98,16 @@ ifeq ($(shell uname -s),Darwin)
 endif
 
 INCLUDE := -I src
+
+CXXFLAGS += $(INCLUDE) -g3 -std=c++17 -O0
+SHARED_FLAGS := -fPIC -shared -Wl,$(SONAME),$(LIBNAME)
 LIBS := -lnymphrpc -lPocoNet -lPocoUtil -lPocoFoundation -lPocoJSON 
+LDFLAGS += $(LIBS)
 
 ifeq ($(USYS),FreeBSD)
 	INCLUDE += -I /usr/local/include
-	LIBS += -L /usr/local/lib
+	LDFLAGS += -L /usr/local/lib
 endif
-
-CXXFLAGS := $(INCLUDE) -g3 -std=c++17 -O0
-SHARED_FLAGS := -fPIC -shared -Wl,$(SONAME),$(LIBNAME)
 
 ifndef NPOCO
 # Current Poco has troubles with MinGW, so network init has to be done manually.
@@ -158,14 +159,14 @@ obj/static/$(ARCH)%.o: %.cpp
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 	
 obj/shared/$(ARCH)%.o: %.cpp
-	$(CXX) -c -o $@ $< $(CXXFLAGS) $(SHARED_FLAGS) $(LIBS)
+	$(CXX) -c -o $@ $< $(CXXFLAGS) $(SHARED_FLAGS) $(LDFLAGS)
 	
 lib/$(ARCH)$(OUTPUT).a: $(OBJECTS)
 	-rm -f $@
 	$(AR) rcs $@ $^
 	
 lib/$(ARCH)$(LIBNAME): $(SHARED_OBJECTS)
-	$(CXX) -o $@ $(CXXFLAGS) $(SHARED_FLAGS) $(SHARED_OBJECTS) $(LIBS)
+	$(CXX) -o $@ $(CXXFLAGS) $(SHARED_FLAGS) $(SHARED_OBJECTS) $(LDFLAGS)
 	
 makedir:
 	$(MAKEDIR) lib
