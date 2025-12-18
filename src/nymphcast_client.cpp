@@ -146,7 +146,7 @@ void NymphCastClient::MediaSeekCallback(uint32_t session, NymphMessage* msg, voi
 	if (count < bufLen) { fileEof->setValue(true); }
 	
 	// Debug
-	std::cout << "Read block with size " << count << " bytes." << std::endl;
+	//std::cout << "Read block with size " << count << " bytes." << std::endl;
 	NYMPH_LOG_DEBUG("Read block with size " + std::to_string(count) + " bytes.");
 	
 	std::vector<NymphType*> values;
