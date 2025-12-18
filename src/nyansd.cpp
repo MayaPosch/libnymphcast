@@ -93,7 +93,9 @@ bool NyanSD::sendQuery(uint16_t port, std::vector<NYSD_query> queries,
 	for (it = interfaces.begin(); it != interfaces.end(); ++it) {
 		const Poco::Net::NetworkInterface& ifc = it->second;
 		
-		std::cerr << "Network interface '" << ifc.displayName() << "'." << std::endl;
+#ifdef DEBUG
+		std::cout << "Network interface '" << ifc.displayName() << "'." << std::endl;
+#endif
 		
 		if (!ifc.supportsIPv4()) {
 			std::cerr << "Network interface " << it->first << " does not support IPv4." << std::endl;
