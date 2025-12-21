@@ -24,10 +24,6 @@ namespace fs = std::filesystem;
 #include <Poco/Path.h>
 #include <Poco/File.h>
 
-#include "nyansd.h"
-
-std::string loggerName = "NymphCastClient";
-
 
 void logFunction(int level, std::string logStr) {
 	std::cout << level << " - " << logStr << std::endl;
@@ -460,7 +456,7 @@ bool isDuplicate(std::vector<NymphCastRemote> &remotes, NymphCastRemote &rm) {
 }
 
 
-bool isDuplicateName(std::vector<NymphCastRemote> &remotes, NymphCastRemote &rm) {
+bool NymphCastClient::isDuplicateName(std::vector<NymphCastRemote> &remotes, NymphCastRemote &rm) {
 	for (uint32_t j = 0; j < remotes.size(); ++j) {
 		if (remotes[j].name == rm.name &&
 			remotes[j].port == rm.port) {
@@ -473,7 +469,7 @@ bool isDuplicateName(std::vector<NymphCastRemote> &remotes, NymphCastRemote &rm)
 
 
 // Remove a loopback response if a non-loopback address exists.
-void removeLoopback(std::vector<NYSD_service> &responses) {
+void NymphCastClient::removeLoopback(std::vector<NYSD_service> &responses) {
 	std::vector<NYSD_service> out;
 	for (uint32_t i = 0; i < responses.size(); ++i) {
 		// If the response is an IPv4 loopback (127.0.0.1, 0x7F000001), and we find a duplicate

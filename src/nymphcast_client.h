@@ -20,6 +20,7 @@
 #include <vector>
 
 #include <nymph/nymph.h>
+#include "nyansd.h"
 
 
 struct NymphCastRemote {
@@ -82,6 +83,7 @@ class NymphCastClient {
 	std::string clientId = "NymphClient_21xb";
 	std::ifstream source;
 	
+	std::string loggerName = "NymphCastClient";
 	NymphLogLevels logLevel = NYMPH_LOG_LEVEL_INFO;
 	
 	bool datacallbacks_set;
@@ -94,6 +96,9 @@ class NymphCastClient {
 	void MediaSeekCallback(uint32_t session, NymphMessage* msg, void* data);
 	void MediaStatusCallback(uint32_t session, NymphMessage* msg, void* data);
 	void ReceiveFromAppCallback(uint32_t session, NymphMessage* msg, void* data);
+	
+	bool isDuplicateName(std::vector<NymphCastRemote> &remotes, NymphCastRemote &rm);
+	void removeLoopback(std::vector<NYSD_service> &responses);
 	
 public:
 	NymphCastClient();
