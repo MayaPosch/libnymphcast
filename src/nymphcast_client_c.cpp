@@ -21,6 +21,8 @@ void NC_setClientId(char* id, uint32_t len);
 void NC_setLogLevel(NC_NymphLogLevels level);
 void NC_setApplicationCallback(NC_AppMessageFunction function);
 void NC_setStatusUpdateCallback(NC_StatusUpdateFunction function);
+void NC_setDisconnectCallback(NC_RemoteDisconnectFunction function);
+
 char* NC_getApplicationList(uint32_t handle, char* list, uint32_t* size);
 char* NC_sendApplicationMessage(uint32_t handle, char* appId, char* message, uint8_t format,
 								char* response, uint32_t* length);
@@ -95,6 +97,15 @@ void statusUpdateCallback(uint32_t handle, NymphPlaybackStatus status) {
 		statusUpdateCB(handle, st);
 	}
 }
+
+
+NC_RemoteDisconnectFunction disconnectCB = 0;
+void disconnectCallback(uint32_t handle) {
+	// Just pass on the message.
+	if (disconnectCB) {
+		disconnectCB(handle);
+	}
+}
 // ---
 
 
@@ -142,6 +153,13 @@ void NC_setStatusUpdateCallback(NC_StatusUpdateFunction function) {
 	// Set the internal callback, assign the provided function pointer to the internal reference.
 	statusUpdateCB = function;
 	client.setStatusUpdateCallback(statusUpdateCallback);
+}
+
+
+// SET DISCONNECT CALLBACK ---
+void NC_setDisconnectCallback(NC_RemoteDisconnectFunction function) {
+	disconnectCB = function;
+	client.setDisconnectCallback(disconnectCallback);
 }
 
 

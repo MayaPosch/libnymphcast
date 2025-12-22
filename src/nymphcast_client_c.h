@@ -93,6 +93,7 @@ typedef enum {
 
 typedef void (*NC_AppMessageFunction)(char*, char*);
 typedef void (*NC_StatusUpdateFunction)(uint32_t, NC_NymphPlaybackStatus);
+typedef void (*NC_RemoteDisconnectFunction)(uint32_t);
 
 
 bool init_nymphCastClient();
@@ -102,6 +103,8 @@ void NC_setClientId(char* id, uint32_t len);
 void NC_setLogLevel(NC_NymphLogLevels level);
 void NC_setApplicationCallback(NC_AppMessageFunction function);
 void NC_setStatusUpdateCallback(NC_StatusUpdateFunction function);
+void NC_setDisconnectCallback(NC_RemoteDisconnectFunction function);
+
 char* NC_getApplicationList(uint32_t handle, char* list, uint32_t* size);
 char* NC_sendApplicationMessage(uint32_t handle, char* appId, char* message, uint8_t format,
 								char* response, uint32_t* length);
