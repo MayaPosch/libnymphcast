@@ -77,6 +77,7 @@ struct NymphMediaFile {
 
 typedef std::function<void(std::string appId, std::string message)> AppMessageFunction;
 typedef std::function<void(uint32_t handle, NymphPlaybackStatus status)> StatusUpdateFunction;
+typedef std::function<void(uint32_t handle)> RemoteDisconnectFunction;
 
 
 class NymphCastClient {
@@ -90,12 +91,14 @@ class NymphCastClient {
 	
 	AppMessageFunction appMessageFunction;
 	StatusUpdateFunction statusUpdateFunction;
+	RemoteDisconnectFunction disconnectedFunction;
 	
 	void MediaReadCallback(uint32_t session, NymphMessage* msg, void* data);
 	void MediaStopCallback(uint32_t session, NymphMessage* msg, void* data);
 	void MediaSeekCallback(uint32_t session, NymphMessage* msg, void* data);
 	void MediaStatusCallback(uint32_t session, NymphMessage* msg, void* data);
 	void ReceiveFromAppCallback(uint32_t session, NymphMessage* msg, void* data);
+	void DisconnectedCallback(uint32_t session);
 	
 	bool isDuplicateName(std::vector<NymphCastRemote> &remotes, NymphCastRemote &rm);
 	void removeLoopback(std::vector<NYSD_service> &responses);
@@ -109,6 +112,7 @@ public:
 	void setMediaCallbacks(NymphCallbackMethod readcb, NymphCallbackMethod seekcb);
 	void setApplicationCallback(AppMessageFunction function);
 	void setStatusUpdateCallback(StatusUpdateFunction function);
+	void setDisconnectCallback(RemoteDisconnectFunction function);
 	std::string getApplicationList(uint32_t handle);
 	std::string sendApplicationMessage(uint32_t handle, std::string &appId, std::string &message, 
 																				uint8_t format = 0);

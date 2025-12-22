@@ -271,6 +271,14 @@ void NymphCastClient::ReceiveFromAppCallback(uint32_t session, NymphMessage* msg
 }
 
 
+void NymphCastClient::DisconnectedCallback(uint32_t session) {
+	// Call the user-registered callback if available.
+	if (disconnectedFunction) {
+		disconnectedFunction(session);
+	}
+}
+
+
 // --- CONSTRUCTOR ---
 /**
 	Initialise the remote client instance with default settings.
@@ -284,9 +292,13 @@ NymphCastClient::NymphCastClient() {
 	// Initialise the remote client instance.
 	long timeout = 2000; // 2 seconds.
 	NymphRemoteServer::init(logFunction, NYMPH_LOG_LEVEL_INFO, timeout);
+	using namespace std::placeholders;
+	NymphRemoteServer::setDisconnectCallback(std::bind(&NymphCastClient::DisconnectedCallback,
+																	this, _1));
 	
 	appMessageFunction = 0;
 	statusUpdateFunction = 0;
+	disconnectedFunction = 0;
 	datacallbacks_set = false;
 }
 
@@ -345,6 +357,17 @@ void NymphCastClient::setApplicationCallback(AppMessageFunction function) {
 */
 void NymphCastClient::setStatusUpdateCallback(StatusUpdateFunction function) {
 	statusUpdateFunction = function;
+}
+
+
+// --- SET DISCONNECT CALLBACK ---
+/**
+	Set the callback to be called when a remote server disconnects.
+	
+	@param function The callback function.
+*/
+void NymphCastClient::setDisconnectCallback(RemoteDisconnectFunction function) {
+	disconnectedFunction = function;
 }
 
 
