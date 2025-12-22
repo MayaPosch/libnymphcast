@@ -7,7 +7,8 @@ Libnymphcast is a library containing the core functionality for a [NymphCast](ht
 - Communication with remote NymphCast Apps.
 - Multi-casting media content.
 - Interact with [NymphCast MediaServers](https://github.com/MayaPosch/NymphCast-MediaServer).
-- C binding for compatibility with C, Ada and other languages. See _Bindings_ section.
+- Built-in C++ and C APIs.
+- Additional bindings for compatibility with Ada and other languages. See _Bindings_ section.
 
 ## Binary releases ##
 
@@ -17,11 +18,15 @@ Binary releases of libnymphrpc are available for the following platforms:
 
 **FreeBSD:** [FreshPorts - nymphcastlib](https://www.freshports.org/multimedia/nymphcastlib/)
 
+## C API ##
+
+For the C language API there is an example C application in `bindings/c/example`. After building and installing the `libnymphcast` library following the below instructions, or installing a binary version (see above), the `Makefile` in the `bindings/c/example/` folder can be used to build the example client.
+
+In order to use the C API, the `nymphcast_client_c.h` header should be included as it contains the C-style API. The library itself is compiled as C++ and both are linked into the final binary.
+
 ## Bindings ##
 
-A C language binding is available in the `bindings/c/` folder, with an example C application in `bindings/c/example`. After building and installing the `libnymphcast` library following the below instructions, or installing a binary version (see above), the `Makefile` in the `bindings/c/example/` folder can be used to build the example client.
-
-In order to use the C binding, two files are needed: the `nymphcast_client_c.h` header that contains the C-style API, and the `nymphcast_client_c.cpp` source file that should be compiled as C++ and linked into the final binary.
+An Ada and Java binding are in progress. They'll be available in the `bindings/` folder as they're being developed.
 
 ## Compile from source ##
 
