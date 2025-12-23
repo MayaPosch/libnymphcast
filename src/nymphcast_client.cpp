@@ -24,6 +24,8 @@ namespace fs = std::filesystem;
 #include <Poco/Path.h>
 #include <Poco/File.h>
 
+#include "nyansd.h"
+
 
 void logFunction(int level, std::string logStr) {
 	std::cout << level << " - " << logStr << std::endl;
@@ -273,6 +275,7 @@ void NymphCastClient::ReceiveFromAppCallback(uint32_t session, NymphMessage* msg
 
 void NymphCastClient::DisconnectedCallback(uint32_t session) {
 	// Call the user-registered callback if available.
+	NYMPH_LOG_DEBUG("Remote disconnected callback function called.");
 	if (disconnectedFunction) {
 		disconnectedFunction(session);
 	}
@@ -498,7 +501,7 @@ void NymphCastClient::removeLoopback(std::vector<NYSD_service> &responses) {
 		// If the response is an IPv4 loopback (127.0.0.1, 0x7F000001), and we find a duplicate
 		// record with different IP, skip it.
 		//std::cout << "IPv4: " << std::hex << responses[i].ipv4 << std::endl;
-		NYMPH_LOG_DEBUG("IPv4: " + responses[i].ipv4);
+		NYMPH_LOG_DEBUG("IPv4: " + std::to_string(responses[i].ipv4));
 		if (responses[i].ipv4 == 0x100007f) {
 			//std::cout << "Detected localhost response." << std::endl;
 			NYMPH_LOG_DEBUG("Detected localhost response.");
