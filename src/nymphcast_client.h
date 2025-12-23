@@ -20,7 +20,6 @@
 #include <vector>
 
 #include <nymph/nymph.h>
-#include "nyansd.h"
 
 
 struct NymphCastRemote {
@@ -78,6 +77,9 @@ struct NymphMediaFile {
 typedef std::function<void(std::string appId, std::string message)> AppMessageFunction;
 typedef std::function<void(uint32_t handle, NymphPlaybackStatus status)> StatusUpdateFunction;
 typedef std::function<void(uint32_t handle)> RemoteDisconnectFunction;
+
+// Forward declarations.
+struct NYSD_service;
 
 
 class NymphCastClient {
